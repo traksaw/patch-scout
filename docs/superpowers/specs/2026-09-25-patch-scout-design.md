@@ -21,7 +21,7 @@ In:
 - README with results table, limits, and next steps.
 
 Out (listed in README as next steps):
-- Method C (single `deep` search with output schema) as a second comparison.
+- Method C: Exa's Agent API (`/agent`), which Exa's own guidance names as the surface for list-building. The strongest comparison, but async and slower; next step.
 - Web page on Vercel.
 - Probabilistic record linkage.
 - More themes and more than one judge.
@@ -57,7 +57,7 @@ type Evidence = {
 src/
   exa.ts               Exa client wrapper: API key, retry, cost + latency tracking
   strategies/
-    profiles.ts        A: category "people" search
+    profiles.ts        A: category "people" search (raw profile documents; the naive baseline)
     evidence.ts        B: search for work → extract people → merge → rank
   merge.ts             identity rules (pure function)
   rank.ts              scoring rules (pure function)
@@ -69,8 +69,14 @@ eval/
 
 ## Method B pipeline
 
-1. **Search for work.** 3–4 Exa searches per theme, each aimed at a kind of evidence and tied to Philadelphia (e.g. workshops/talks/events, GitHub projects, personal sites/posts).
-2. **Extract people.** Exa `contents.summary` with a JSON schema per page returns `{ people: [{ name, handle, role }], philly }`. No second model or API key.
+1. **Search for work, and extract people in the same call.** 3–4 Exa `/search` calls per theme, each aimed at a kind of evidence (workshops/talks/events, open-source projects, personal sites/posts). Each call sets:
+   - `query`: retrieval intent only, e.g. "NFC workshop Philadelphia". No keep/drop words in the query.
+   - `systemPrompt`: the rules. Keep a person only when the page shows they taught, built, or wrote the work; mark `philly` only when the page ties them to Philadelphia; never guess a name.
+   - `outputSchema`: `{ people: [{ name, handle, role: taught|built|wrote, url, philly, linkedUrls }] }`.
+   - `contents: { highlights: true }`, so each evidence item has an excerpt.
+   - No `category`, no domain filters, no date filters, no boilerplate `numResults` (per Exa's guidance; categories like `github` do not exist). Recency is handled in ranking from `publishedDate`.
+   Citations come from `output.grounding`. No second model or API key.
+2. **Map to evidence.** Each extracted person + their cited URL becomes an `Evidence` item, joined to the result's `publishedDate` and highlights.
 3. **Merge** (`merge.ts`):
    1. Merge when pages link to each other or share a handle.
    2. Merge when the full name matches exactly and both sides are Philly.
@@ -117,6 +123,13 @@ eval/
 ## Who writes what
 
 Waskar writes `merge.ts` and `rank.ts` (the decisions he defended in decide-first); Claude coaches and reviews. Claude may scaffold `exa.ts`, CLI, eval scripts, and config, and walks Waskar through them before he sends the repo.
+
+## Exa guidance applied (build-with-exa skill v0.2.0)
+
+- Structured extraction uses `/search` + `outputSchema` + `systemPrompt`, not `contents.summary`.
+- `category: "people"` is kept only for method A, whose purpose is the naive raw-profile baseline. Exa routes real list-building to `/agent`, which is why C is the Agent API.
+- `findSimilar` is deprecated and not used.
+- Cost comes from `costDollars` on each response; latency from `searchTime` plus wall clock.
 
 ## Open items
 
