@@ -1,0 +1,243 @@
+{
+  "requestId": "ceffa6e4c1342e3020c8fa5e72e18f26",
+  "resolvedSearchType": "",
+  "results": [
+    {
+      "id": "https://www.linkedin.com/in/person-a01",
+      "title": "Person A01",
+      "url": "https://www.linkedin.com/in/person-a01",
+      "publishedDate": "2026-08-10T03:24:09.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Sarasota, Florida, United States. Works in the Philadelphia area."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a01",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A01",
+            "firstName": "Person",
+            "lastName": "A01",
+            "location": "Sarasota, Florida, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a02",
+      "title": "Person A02",
+      "url": "https://www.linkedin.com/in/person-a02",
+      "publishedDate": "2026-09-18T05:46:19.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Philadelphia, Pennsylvania, United States."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a02",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A02",
+            "firstName": "Person",
+            "lastName": "A02",
+            "location": "Philadelphia, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a03",
+      "title": "Person A03",
+      "url": "https://www.linkedin.com/in/person-a03",
+      "publishedDate": "2026-09-24T04:38:42.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Philadelphia, Pennsylvania, United States."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a03",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A03",
+            "firstName": "Person",
+            "lastName": "A03",
+            "location": "Philadelphia, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a04",
+      "title": "Person A04",
+      "url": "https://www.linkedin.com/in/person-a04",
+      "publishedDate": "2026-09-17T23:27:38.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Cape Coral Metropolitan Area. Works in the Philadelphia area."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a04",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A04",
+            "firstName": "Person",
+            "lastName": "A04",
+            "location": "Cape Coral Metropolitan Area",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a05",
+      "title": "Person A05",
+      "url": "https://www.linkedin.com/in/person-a05",
+      "publishedDate": "2026-09-20T07:34:16.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: San Francisco Bay Area."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a05",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A05",
+            "firstName": "Person",
+            "lastName": "A05",
+            "location": "San Francisco Bay Area",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a06",
+      "title": "Person A06",
+      "url": "https://www.linkedin.com/in/person-a06",
+      "publishedDate": "2026-09-16T05:01:02.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Philadelphia, Pennsylvania, United States."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a06",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A06",
+            "firstName": "Person",
+            "lastName": "A06",
+            "location": "Philadelphia, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a07",
+      "title": "Person A07",
+      "url": "https://www.linkedin.com/in/person-a07",
+      "publishedDate": "2026-09-21T06:49:13.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Cherry Hill, New Jersey, United States. Works in the Philadelphia area."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a07",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A07",
+            "firstName": "Person",
+            "lastName": "A07",
+            "location": "Cherry Hill, New Jersey, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a08",
+      "title": "Person A08",
+      "url": "https://www.linkedin.com/in/person-a08",
+      "publishedDate": "2026-09-11T21:59:28.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Philadelphia, Pennsylvania, United States."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a08",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A08",
+            "firstName": "Person",
+            "lastName": "A08",
+            "location": "Philadelphia, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a09",
+      "title": "Person A09",
+      "url": "https://www.linkedin.com/in/person-a09",
+      "publishedDate": "2026-09-22T17:26:59.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Philadelphia, Pennsylvania, United States."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a09",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A09",
+            "firstName": "Person",
+            "lastName": "A09",
+            "location": "Philadelphia, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "https://www.linkedin.com/in/person-a10",
+      "title": "Person A10",
+      "url": "https://www.linkedin.com/in/person-a10",
+      "publishedDate": "2026-09-16T04:37:54.000Z",
+      "highlights": [
+        "Placeholder profile text. Location: Pottstown, Pennsylvania, United States. Works in the Philadelphia area."
+      ],
+      "entities": [
+        {
+          "id": "https://exa.ai/library/person/placeholder-a10",
+          "type": "person",
+          "version": 1,
+          "properties": {
+            "name": "Person A10",
+            "firstName": "Person",
+            "lastName": "A10",
+            "location": "Pottstown, Pennsylvania, United States",
+            "workHistory": []
+          }
+        }
+      ]
+    }
+  ],
+  "searchTime": 655.5,
+  "costDollars": {
+    "total": 0.007,
+    "search": {
+      "neural": 0.007
+    }
+  }
+}

@@ -8,7 +8,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src", "eval", "scripts", "tests"]
+  "include": [
+    "src",
+    "eval",
+    "scripts",
+    "tests"
+  ]
 }
