@@ -1,0 +1,29 @@
+{
+  "name": "patch-scout",
+  "version": "0.1.0",
+  "description": "Find Philadelphia people who can teach a PATCH night theme, using the Exa API.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "scout": "tsx src/cli.ts",
+    "record": "tsx scripts/record-fixtures.ts",
+    "eval:pool": "tsx eval/pool.ts",
+    "eval:score": "tsx eval/score.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "exa-js": "^2.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
