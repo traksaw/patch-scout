@@ -22,4 +22,7 @@ describe('parsePeopleOutput', () => {
     expect(parsePeopleOutput('not json')).toEqual({ people: [], dropped: 1 })
     expect(parsePeopleOutput({ nope: true })).toEqual({ people: [], dropped: 1 })
   })
+  it('drops an item whose url is only spaces', () =>  {
+    expect(parsePeopleOutput({ people: [{ ...good, url: '   ' }] })).toEqual({ people: [], dropped: 1 })
+  })
 })
