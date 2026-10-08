@@ -5,3 +5,4 @@ dist/
 eval/out/
 runs/
 .superpowers/
+.claude/
