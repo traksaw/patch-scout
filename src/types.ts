@@ -61,6 +61,24 @@ export type RunStats = {
   warnings: string[]
 }
 
+export type Result = {
+    url: string, 
+    title?: string,
+    highlights?: string[];
+    publishedDate?: string;
+    score?: number
+}
+
+export type ExtractedPerson = {
+    name: string,
+    handle?: string,
+    role: 'taught' | 'built' | 'wrote',
+    url: string,
+    philly: boolean,
+    linkedUrls: string[],
+} // represents the schema of an extracted person
+
+
 export type StrategyResult = { candidates: Candidate[]; stats: RunStats }
 
 export type Strategy = (theme: string) => Promise<StrategyResult>

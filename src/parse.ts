@@ -1,15 +1,7 @@
-export type ExtractedPerson = {
-    name: string,
-    handle?: string,
-    role: 'taught' | 'built' | 'wrote',
-    url: string,
-    philly: boolean,
-    linkedUrls: string[],
-} // represents the schema of an extracted person
-
+import { ExtractedPerson } from "./types.js"
 const ROLES = new Set(['taught', 'built', 'wrote'])
 
-function isRecord(v: unknown): v is Record<string, unknown> {
+export function isRecord(v: unknown): v is Record<string, unknown> {
     if (typeof v === 'object' && v !== null && !Array.isArray(v)) return true
     return false
 } // checks if a value is a plain object (record)
@@ -52,5 +44,5 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
 
     }
 
-    return { people, dropped }
+    return { people, dropped } // return the parsed people array and the count of dropped items
 }
