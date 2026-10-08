@@ -18,7 +18,7 @@ function union(boss: number[], a: number, b: number): void {
     }
 }
 
-//mergeMentions takes a list of mentions and gives back a list of merged people;
+//mergeMentions takes a list of mentions and gives back a list of merged people
 
 export function mergeMentions(mentions: Mention[]): MergedPerson[] {
     const bossIndex = mentions.map((_, index) => index) // each mention starts as its own boss.
@@ -33,42 +33,42 @@ export function mergeMentions(mentions: Mention[]): MergedPerson[] {
     const sheets = new Map<number, MergedPerson>()
 
     for (let i = 0; i < mentions.length; i++) {
-            const m = mentions[i]! // get the current mention 
-            const root = find(bossIndex, i) // find the top boss of the current mention
-            const sheet = sheets.get(root) // get the existing merged person sheet for the root index
+        const m = mentions[i]! // get the current mention 
+        const root = find(bossIndex, i) // find the top boss of the current mention
+        const sheet = sheets.get(root) // get the existing merged person sheet for the root index
 
-            if (!sheet) {
-                sheets.set(root, {
-                    name: m.name,
-                    handles: m.handle ? [m.handle.toLowerCase()] : [],
-                    philly: m.evidence.philly,
-                    evidence: [m.evidence],
-                    possibleDuplicateOf: [],
-                })
+        if (!sheet) {
+            sheets.set(root, {
+                name: m.name,
+                handles: m.handle ? [m.handle.toLowerCase()] : [],
+                philly: m.evidence.philly,
+                evidence: [m.evidence],
+                possibleDuplicateOf: [],
+            })
+        }
+        else {
+            sheet.philly = sheet.philly || m.evidence.philly
+            if (m.handle && !sheet.handles.includes(m.handle.toLowerCase())) {
+                sheet.handles.push(m.handle.toLowerCase())
             }
-            else {
-                sheet.philly = sheet.philly || m.evidence.philly
-                if (m.handle && !sheet.handles.includes(m.handle.toLowerCase())) {
-                    sheet.handles.push(m.handle.toLowerCase())
-                }
-                if (!sheet.evidence.some((e) => e.url === m.evidence.url)) {
-                    sheet.evidence.push(m.evidence)
-                }
+            if (!sheet.evidence.some((e) => e.url === m.evidence.url)) {
+                sheet.evidence.push(m.evidence)
+            }
 
+        }
+    }
+
+    const people = [...sheets.values()]
+    for (let i = 0; i < people.length; i++) {
+        for (let j = i + 1; j < people.length; j++) {
+            if (normalizeName(people[i]!.name) === normalizeName(people[j]!.name)) { //this will compare if the names are the same in each merged person sheet
+                people[i]!.possibleDuplicateOf.push(people[j]!.name); // mark the other person as a possible duplicate 
+                people[j]!.possibleDuplicateOf.push(people[i]!.name);
             }
         }
-
-            const people = [...sheets.values()]
-            for (let i = 0; i < people.length; i++) {
-                for (let j = i + 1; j < people.length; j++) {
-                    if (normalizeName(people[i]!.name) === normalizeName(people[j]!.name)) { //this will compare if the names are the same in each merged person sheet
-                        people[i]!.possibleDuplicateOf.push(people[j]!.name); // mark the other person as a possible duplicate 
-                        people[j]!.possibleDuplicateOf.push(people[i]!.name);
-                    }
-                }
-            }
-            return people // return the list of merged people with possible duplicates marked
     }
+    return people // return the list of merged people with possible duplicates marked
+}
 
 
 
