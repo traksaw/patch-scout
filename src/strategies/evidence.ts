@@ -41,9 +41,9 @@ export const OUTPUT_SCHEMA = {
     required: ['people'],
 }
 
-function readResults(data: unknown): Result[] {
+export function readResults(data: unknown): Result[] {
     if (!isRecord(data) || !Array.isArray(data.results)) return [] // return an empty array if data isn't a record or data isnt an array
-    return data.results.filter((x): x is Result => isRecord(x) && typeof x.url === 'string')
+    return data.results.filter((x): x is Result => isRecord(x) && typeof x.url === 'string' && x.url !== '')
 }
 
 function readContent(data: unknown): unknown {
