@@ -11,13 +11,14 @@ const rest = flag >= 0 ? args.filter((_, i) => i !== flag && i !== flag + 1) : a
 const theme = rest.join(' ').trim()
 
 if (!theme || (strategy !== 'a' && strategy !== 'b')) {
-  console.error('Usage: npm run scout -- "<theme>" [--strategy a|b]')
-  process.exit(1) // stop: missing theme or unknown strategy
+    console.error('Usage: npm run scout -- "<theme>" [--strategy a|b]')
+    process.exit(1) // stop: missing theme or unknown strategy
 }
 
 const search = defaultSearchFn()
 const run = strategy === 'a' ? profilesStrategy(search) : evidenceStrategy(search)
 const result = await run(theme)
 for (const w of result.stats.warnings) console.error(`warning: ${w}`)
+
 console.log(renderMarkdown(theme, strategy, result))
 
