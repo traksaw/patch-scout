@@ -93,7 +93,7 @@ function isSamePerson(a: Mention, b: Mention): boolean {
     return false
 }
 
-function normalizeName(name: string): string {
+export function normalizeName(name: string): string {
     // Normalize the name by converting it to lowercase and removing any leading/trailing whitespace
     return name.trim().toLowerCase().replace(/\s+/g, ' ')
 }
