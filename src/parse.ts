@@ -31,6 +31,7 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const handle = typeof item.handle === 'string' ? item.handle.trim() : ''
         const philly =  item.philly === true 
         const linkedUrls = Array.isArray(item.linkedUrls) ? item.linkedUrls.filter((u): u is string => typeof u === 'string') : []
+        const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
 
         if (name === '' || url === '' || !ROLES.has(role)) { dropped++; continue }
         people.push({
@@ -40,6 +41,7 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
             handle: handle !== '' ? handle : undefined,
             philly: philly,
             linkedUrls: linkedUrls,
+            quote: quote,
         })
 
     }

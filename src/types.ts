@@ -65,6 +65,7 @@ export type Result = {
     url: string, 
     title?: string,
     highlights?: string[];
+    text?: string; // full page text, when the search asks for contents.text
     publishedDate?: string;
     score?: number
 }
@@ -76,6 +77,7 @@ export type ExtractedPerson = {
     url: string,
     philly: boolean,
     linkedUrls: string[],
+    quote: string, // exact sentence from the page that shows the role; '' when missing
 } // represents the schema of an extracted person
 
 
