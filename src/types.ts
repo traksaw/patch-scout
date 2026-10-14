@@ -67,7 +67,8 @@ export type Result = {
     highlights?: string[];
     text?: string; // full page text, when the search asks for contents.text
     publishedDate?: string;
-    score?: number
+    score?: number;
+    summary?: string;
 }
 
 export type ExtractedPerson = {

@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { evidenceStrategy, EVIDENCE_QUERIES, OUTPUT_SCHEMA } from '../src/strategies/evidence.js'
+import { evidenceStrategy, EVIDENCE_QUERIES, OUTPUT_SCHEMA, SYSTEM_PROMPT } from '../src/strategies/evidence.js'
 import fixture from './fixtures/strategy-b.json' with { type: 'json' }
 
 const NOW = new Date('2026-10-01T00:00:00Z')
+
+// One search result with its own structured summary, the shape Exa returns for contents.summary.
+const page = (url: string, text: string, people: Record<string, unknown>[]) =>
+  ({ url, title: 'Page', text, publishedDate: '2026-01-01', summary: JSON.stringify({ people }) })
 
 describe('evidenceStrategy', () => {
   it('builds 3 queries with no keep/drop words', () => {
@@ -32,23 +36,11 @@ describe('evidenceStrategy', () => {
     const run = evidenceStrategy(async () => fixture, NOW)
     const { candidates, stats } = await run('NFC and tap automations')
     expect(stats.calls).toHaveLength(3)
+    expect(candidates.length).toBeGreaterThan(0) // without this, an empty list passes the loop below
     for (const c of candidates) {
       expect(c.evidence.some((e) => e.philly)).toBe(true)
       expect(c.evidence.length).toBeGreaterThan(0)
     }
-  })
-
-  it('drops a cited URL that is not in the results, and counts it', async () => {
-    const fake = {
-      results: [{ url: 'https://in.example', title: 'In', text: 'Kept led a workshop on tap automations.', publishedDate: '2026-01-01' }],
-      output: { content: { people: [
-        { name: 'Kept', role: 'taught', url: 'https://in.example', philly: true, quote: 'Kept led a workshop on tap automations' },
-        { name: 'Ghost', role: 'taught', url: 'https://not-in-results.example', philly: true },
-      ] } },
-    }
-    const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
-    expect(candidates.map((c) => c.name)).toEqual(['Kept'])
-    expect(stats.dropped).toBe(3) // Ghost once per query x 3 queries
   })
 
   it('survives every query failing', async () => {
@@ -59,22 +51,50 @@ describe('evidenceStrategy', () => {
     expect(stats.warnings.at(-1)).toBe('No Philadelphia candidates found.')
   })
 
-  it('asks Exa for page text, not highlights, so the quote can be checked', async () => {
+  it('asks Exa for one structured summary per page, plus the page text for the quote check', async () => {
     let seen: Record<string, unknown> = {}
     await evidenceStrategy(async (_q, opts) => { seen = opts; return { results: [] } }, NOW)('t')
-    expect(seen.contents).toEqual({ text: true })
+    expect(seen.contents).toEqual({ text: true, summary: { query: SYSTEM_PROMPT, schema: OUTPUT_SCHEMA } })
+    expect(seen.outputSchema).toBeUndefined() // no single answer for the whole search
+    expect(seen.systemPrompt).toBeUndefined()
+  })
+
+  it('extracts people from every page on its own', async () => {
+    const fake = { results: [
+      page('https://one.example', 'Ana Ruiz led a beginner workshop on LED sewing.', [
+        { name: 'Ana Ruiz', role: 'taught', url: 'https://one.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' }]),
+      page('https://two.example', 'Bo Chen built a sound-reactive light wall for the fair.', [
+        { name: 'Bo Chen', role: 'built', url: 'https://two.example', philly: true, quote: 'Bo Chen built a sound-reactive light wall' }]),
+    ] }
+    const { candidates } = await evidenceStrategy(async () => fake, NOW)('t')
+    expect(candidates.map((c) => c.name).sort()).toEqual(['Ana Ruiz', 'Bo Chen'])
+  })
+
+  it('uses the page URL as the evidence link, even when the model cites another one', async () => {
+    const fake = { results: [
+      page('https://one.example', 'Ana Ruiz led a beginner workshop on LED sewing.', [
+        { name: 'Ana Ruiz', role: 'taught', url: 'https://somewhere-else.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' }]),
+    ] }
+    const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
+    expect(candidates[0]?.evidence[0]?.url).toBe('https://one.example')
+    expect(stats.dropped).toBe(0)
+  })
+
+  it('counts a page whose summary is not valid JSON as a drop, and keeps the other pages', async () => {
+    const good = page('https://one.example', 'Ana Ruiz led a beginner workshop on LED sewing.', [
+      { name: 'Ana Ruiz', role: 'taught', url: 'https://one.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' }])
+    const fake = { results: [good, { ...good, url: 'https://two.example', summary: 'not json' }] }
+    const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
+    expect(candidates.map((c) => c.name)).toEqual(['Ana Ruiz'])
+    expect(stats.dropped).toBe(3) // the bad page once per query x 3 queries
   })
 
   it('checks each role against its quote and uses the quote as the excerpt', async () => {
     const text = 'Last spring Ana Ruiz led a beginner workshop on LED sewing. Bo Chen builds knitted circuits in his lab.'
-    const fake = {
-      results: [{ url: 'https://page.example', title: 'Page', text, publishedDate: '2026-01-01' }],
-      output: { content: { people: [
-        { name: 'Ana Ruiz', role: 'taught', url: 'https://page.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' },
-        { name: 'Bo Chen', role: 'taught', url: 'https://page.example', philly: true, quote: 'Bo Chen builds knitted circuits in his lab' },
-        { name: 'Cy Diaz', role: 'taught', url: 'https://page.example', philly: true, quote: 'Cy Diaz taught a class on soldering' },
-      ] } },
-    }
+    const fake = { results: [page('https://page.example', text, [
+      { name: 'Ana Ruiz', role: 'taught', url: 'https://page.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' },
+      { name: 'Bo Chen', role: 'taught', url: 'https://page.example', philly: true, quote: 'Bo Chen builds knitted circuits in his lab' },
+    ])] }
     const { candidates } = await evidenceStrategy(async () => fake, NOW)('t')
     const kindOf = (name: string) => candidates.find((c) => c.name === name)?.evidence[0]?.kind
     expect(kindOf('Ana Ruiz')).toBe('taught')
@@ -85,18 +105,15 @@ describe('evidenceStrategy', () => {
 
   it('drops a person with no proof at all, and counts them', async () => {
     const text = 'Ana Ruiz led a beginner workshop on LED sewing at the library. Cy Diaz built a robot arm for the fair.'
-    const page = (url: string) => ({ url, title: 'Page', text, publishedDate: '2026-01-01' })
-    const fake = {
-      results: [page('https://one.example'), page('https://two.example')],
-      output: { content: { people: [
-        // Cy has one invented quote and one real one, so Cy has proof and stays.
+    const fake = { results: [
+      page('https://one.example', text, [
+        // Cy has one invented quote here and a real one on the next page, so Cy has proof and stays.
         { name: 'Cy Diaz', role: 'built', url: 'https://one.example', philly: true, quote: 'Cy Diaz invented a new kind of tap card' },
+        { name: 'Iffy Books', role: 'taught', url: 'https://one.example', philly: true, quote: '- Iffy Books' }]),
+      page('https://two.example', text, [
         { name: 'Cy Diaz', role: 'built', url: 'https://two.example', philly: true, quote: 'Cy Diaz built a robot arm for the fair' },
-        // Iffy Books has only a short quote, and Ghost only an invented one: no proof anywhere.
-        { name: 'Iffy Books', role: 'taught', url: 'https://one.example', philly: true, quote: '- Iffy Books' },
-        { name: 'Ghost', role: 'taught', url: 'https://two.example', philly: true, quote: 'Ghost taught a class on soldering every week' },
-      ] } },
-    }
+        { name: 'Ghost', role: 'taught', url: 'https://two.example', philly: true, quote: 'Ghost taught a class on soldering every week' }]),
+    ] }
     const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
     expect(candidates.map((c) => c.name)).toEqual(['Cy Diaz'])
     expect(stats.dropped).toBe(2) // Iffy Books and Ghost: the check runs on merged people, so each counts once

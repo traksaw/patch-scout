@@ -55,12 +55,6 @@ export function readResults(data: unknown): Result[] {
     return data.results.filter((x): x is Result => isRecord(x) && typeof x.url === 'string' && x.url !== '')
 }
 
-function readContent(data: unknown): unknown {
-    if (!isRecord(data)) return undefined
-    if (!isRecord(data.output)) return undefined
-    return data.output.content
-}
-
 export function evidenceStrategy(
     search: SearchFn,
     now: Date = new Date(),
@@ -75,40 +69,35 @@ export function evidenceStrategy(
         for (const query of EVIDENCE_QUERIES(theme)) {
             const res = await searcher.search(query, {
                 type: 'auto',
-                systemPrompt: SYSTEM_PROMPT,
-                outputSchema: OUTPUT_SCHEMA,
-                contents: { text: true },
+                contents: { text: true, summary: { query: SYSTEM_PROMPT, schema: OUTPUT_SCHEMA } },
             })
             if (!res.ok) {
                 warnings.push(`Query failed after retries, skipped: "${query}" (${res.error})`);
                 continue
             }
             const results = readResults(res.data)
-            const byUrl = new Map(results.map((r, i) => [r.url, { r, i }]))
-            const parsed = parsePeopleOutput(readContent(res.data))
-            dropped += parsed.dropped
+            for (const [i, page] of results.entries()) {
+                const parsed = parsePeopleOutput(page.summary)
+                dropped += parsed.dropped
 
-            for (const p of parsed.people) {
-                const hit = byUrl.get(p.url)
-                if (!hit) { dropped++; continue }
-
-                const relevance = typeof hit.r.score === 'number' ? hit.r.score : 1 - hit.i / results.length
-                const kind = checkRole(p.role, p.quote, hit.r.text ?? '')
-                const evidence: Evidence = {
-                    url: p.url,
-                    title: hit.r.title ?? p.url,
-                    excerpt: kind === 'profile' ? '' : p.quote,
-                    kind: kind,
-                    publishedDate: hit.r.publishedDate,
-                    philly: p.philly,
-                    linkedUrls: p.linkedUrls,
-                    relevance,
+                for (const person of parsed.people) {
+                    const relevance = typeof page.score === 'number' ? page.score : 1 - i / results.length
+                    const kind = checkRole(person.role, person.quote, page.text ?? '')
+                    const evidence: Evidence = {
+                        url: page.url,
+                        title: page.title ?? page.url,
+                        excerpt: kind === 'profile' ? '' : person.quote,
+                        kind: kind,
+                        publishedDate: page.publishedDate,
+                        philly: person.philly,
+                        linkedUrls: person.linkedUrls,
+                        relevance,
+                    }
+                    mentions.push({ name: person.name, handle: person.handle, evidence })
                 }
-                mentions.push({ name: p.name, handle: p.handle, evidence })
             }
-
         }
-        const merged = mergeMentions(mentions) 
+        const merged = mergeMentions(mentions)
         const proven = merged.filter((person) => person.evidence.some((e) => e.kind !== 'profile'))
         dropped += merged.length - proven.length
         const candidates = rankPeople(proven, { now })
