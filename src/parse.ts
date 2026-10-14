@@ -33,12 +33,12 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const linkedUrls = Array.isArray(item.linkedUrls) ? item.linkedUrls.filter((u): u is string => typeof u === 'string') : []
         const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
         const entity = typeof item.entity === 'string' ? item.entity : ''
-        if (name === '' || url === '' || !ROLES.has(role) || (entity.length > 0 && entity !== 'person')) { dropped++; continue }
+        if (name === '' || url === '' || !ROLES.has(role) || (entity.length > 0 && entity !== 'person') || (PLACEHOLDERS.has(name.toLowerCase()) || !/\p{L}/u.test(name))) { dropped++; continue }
         people.push({
             name,
             url,
             role: role as ExtractedPerson['role'], // safe: ROLES.has(role) checked it above
-            handle: PLACEHOLDERS.has(handle.toLowerCase()) || handle.length === 0 ? undefined : handle, 
+            handle: PLACEHOLDERS.has(handle.toLowerCase()) || handle.length === 0 ? undefined : handle,
             philly: philly,
             linkedUrls: linkedUrls,
             quote: quote,
