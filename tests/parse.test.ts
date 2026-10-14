@@ -33,4 +33,17 @@ describe('parsePeopleOutput', () => {
     expect(out.people.map((p) => p.quote)).toEqual(['', ''])
     expect(out.dropped).toBe(0)
   })
+  it('drops organizations, teams, and events, and counts them', () => {
+    const out = parsePeopleOutput({ people: [
+      { ...good, entity: 'person' },
+      { ...good, name: 'PhilaCon Valley', entity: 'organization' },
+      { ...good, name: 'team Ben-Franklin', entity: 'team' },
+      { ...good, name: 'PATCH 002', entity: 'event' },
+    ] })
+    expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
+    expect(out.dropped).toBe(3)
+  })
+  it('keeps an item with no entity field, as older fixtures have none', () => {
+    expect(parsePeopleOutput({ people: [good] }).dropped).toBe(0)
+  })
 })

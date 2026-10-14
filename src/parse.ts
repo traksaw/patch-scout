@@ -32,8 +32,8 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const philly =  item.philly === true 
         const linkedUrls = Array.isArray(item.linkedUrls) ? item.linkedUrls.filter((u): u is string => typeof u === 'string') : []
         const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
-
-        if (name === '' || url === '' || !ROLES.has(role)) { dropped++; continue }
+        const entity = typeof item.entity === 'string' ? item.entity : ''
+        if (name === '' || url === '' || !ROLES.has(role) || (entity.length > 0 && entity !== 'person')) { dropped++; continue }
         people.push({
             name,
             url,
