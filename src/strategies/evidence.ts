@@ -7,8 +7,9 @@ import { checkRole } from '../role.js'
 
 export const EVIDENCE_QUERIES = (theme: string): string[] => {
     return [`${theme} workshop or talk in Philadelphia`,
-    `${theme} open source project by a Philadelphia developer`,
-    `${theme} blog post or tutorial by a Philadelphia builder`]
+    `${theme} meetup in Philadelphia`,
+    `${theme} hackathon or demo night in Philadelphia`
+    ]
 }
 
 export const SYSTEM_PROMPT = [
@@ -20,7 +21,9 @@ export const SYSTEM_PROMPT = [
     'Set quote to one exact sentence copied from the page that shows the role. Copy it word for word. Do not paraphrase.',
     'Set philly to true only when the page ties the person to Philadelphia.',
     "Set url to the page that shows the work. List outbound links from that page to the person's own site or profiles in linkedUrls.",
+    'Set entity to person for one individual human, to organization for a company or group, to team for a named team, and to event for an event or meetup.',
     'Never guess a name. Omit a person whose name the page does not state.',
+    'Go through every page one by one. Return every named person from every page that shows their work, not only the first few. A list of ten or more people is fine.'
 ].join(' ')
 
 export const OUTPUT_SCHEMA = {
@@ -38,8 +41,9 @@ export const OUTPUT_SCHEMA = {
                     philly: { type: 'boolean' },
                     linkedUrls: { type: 'array', items: { type: 'string' } },
                     quote: { type: 'string' },
+                    entity: { type: 'string', enum: ['person', 'team', 'organization', 'event'] }
                 },
-                required: ['name', 'role', 'url', 'philly', 'quote'],
+                required: ['name', 'role', 'url', 'philly', 'quote', 'entity'],
             },
         },
     },
@@ -80,7 +84,7 @@ export function evidenceStrategy(
                 continue
             }
             const results = readResults(res.data)
-            const byUrl = new Map(results.map((r,i) =>[ r.url, { r, i } ]))
+            const byUrl = new Map(results.map((r, i) => [r.url, { r, i }]))
             const parsed = parsePeopleOutput(readContent(res.data))
             dropped += parsed.dropped
 
@@ -102,12 +106,12 @@ export function evidenceStrategy(
                 }
                 mentions.push({ name: p.name, handle: p.handle, evidence })
             }
-            
-        }   
+
+        }
         const candidates = rankPeople(mergeMentions(mentions), { now })
         if (!candidates.length) {
             warnings.push('No Philadelphia candidates found.')
         }
-        return { candidates, stats: { calls: searcher.calls, dropped, warnings }}
+        return { candidates, stats: { calls: searcher.calls, dropped, warnings } }
     }
 }

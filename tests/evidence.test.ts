@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evidenceStrategy, EVIDENCE_QUERIES } from '../src/strategies/evidence.js'
+import { evidenceStrategy, EVIDENCE_QUERIES, OUTPUT_SCHEMA } from '../src/strategies/evidence.js'
 import fixture from './fixtures/strategy-b.json' with { type: 'json' }
 
 const NOW = new Date('2026-10-01T00:00:00Z')
@@ -9,6 +9,23 @@ describe('evidenceStrategy', () => {
     const qs = EVIDENCE_QUERIES('NFC and tap automations')
     expect(qs).toHaveLength(3)
     for (const q of qs) expect(q).not.toMatch(/\b(only|include|exclude|drop|return)\b/i)
+  })
+
+  it('searches for local events, not repos or blogs, since those pages rarely name a city', () => {
+    const qs = EVIDENCE_QUERIES('voice agents')
+    for (const q of qs) {
+      expect(q).toContain('voice agents')
+      expect(q).toMatch(/Philadelphia/)
+      expect(q).not.toMatch(/\b(open source|project|developer|blog|tutorial)\b/i)
+    }
+    expect(new Set(qs).size).toBe(3) // three different queries, not one repeated
+  })
+
+  it('makes the model say whether each item is a person, a team, an organization, or an event', () => {
+    const item = OUTPUT_SCHEMA.properties.people.items
+    expect(item.properties.entity.type).toBe('string')
+    expect([...item.properties.entity.enum].sort()).toEqual(['event', 'organization', 'person', 'team'])
+    expect(item.required).toContain('entity')
   })
 
   it('runs end to end on the recorded fixture', async () => {

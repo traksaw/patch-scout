@@ -1,6 +1,6 @@
 import { ExtractedPerson } from "./types.js"
 const ROLES = new Set(['taught', 'built', 'wrote'])
-
+const PLACEHOLDERS = new Set(['n/a', 'none', 'unknown', '-', 'null'])
 export function isRecord(v: unknown): v is Record<string, unknown> {
     if (typeof v === 'object' && v !== null && !Array.isArray(v)) return true
     return false
@@ -29,16 +29,16 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const url = typeof item.url === 'string' ? item.url.trim() : ''
         const role = typeof item.role === 'string' ? item.role : ''
         const handle = typeof item.handle === 'string' ? item.handle.trim() : ''
-        const philly =  item.philly === true 
+        const philly = item.philly === true
         const linkedUrls = Array.isArray(item.linkedUrls) ? item.linkedUrls.filter((u): u is string => typeof u === 'string') : []
         const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
-
-        if (name === '' || url === '' || !ROLES.has(role)) { dropped++; continue }
+        const entity = typeof item.entity === 'string' ? item.entity : ''
+        if (name === '' || url === '' || !ROLES.has(role) || (entity.length > 0 && entity !== 'person')) { dropped++; continue }
         people.push({
             name,
             url,
             role: role as ExtractedPerson['role'], // safe: ROLES.has(role) checked it above
-            handle: handle !== '' ? handle : undefined,
+            handle: PLACEHOLDERS.has(handle.toLowerCase()) || handle.length === 0 ? undefined : handle, 
             philly: philly,
             linkedUrls: linkedUrls,
             quote: quote,

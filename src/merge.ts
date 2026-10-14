@@ -78,7 +78,7 @@ export function mergeMentions(mentions: Mention[]): MergedPerson[] {
 
 function isSamePerson(a: Mention, b: Mention): boolean {
     // Check if both mentions have handles and if they match (case-insensitive)
-    if (a.handle && b.handle && a.handle.toLowerCase() === b.handle.toLowerCase()) {
+    if ((a.handle && b.handle) && (a.handle.toLowerCase() === b.handle.toLowerCase())) {
         return true
     }
     // Check if either mention's linked URLs include the other's URL
