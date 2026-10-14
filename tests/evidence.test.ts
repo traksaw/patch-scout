@@ -109,13 +109,13 @@ describe('evidenceStrategy', () => {
       page('https://one.example', text, [
         // Cy has one invented quote here and a real one on the next page, so Cy has proof and stays.
         { name: 'Cy Diaz', role: 'built', url: 'https://one.example', philly: true, quote: 'Cy Diaz invented a new kind of tap card' },
-        { name: 'Iffy Books', role: 'taught', url: 'https://one.example', philly: true, quote: '- Iffy Books' }]),
+        { name: 'Ivy Short', role: 'taught', url: 'https://one.example', philly: true, quote: '- Ivy Short' }]),
       page('https://two.example', text, [
         { name: 'Cy Diaz', role: 'built', url: 'https://two.example', philly: true, quote: 'Cy Diaz built a robot arm for the fair' },
-        { name: 'Ghost', role: 'taught', url: 'https://two.example', philly: true, quote: 'Ghost taught a class on soldering every week' }]),
+        { name: 'Gus Ghost', role: 'taught', url: 'https://two.example', philly: true, quote: 'Gus Ghost taught a class on soldering every week' }]),
     ] }
     const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
     expect(candidates.map((c) => c.name)).toEqual(['Cy Diaz'])
-    expect(stats.dropped).toBe(2) // Iffy Books and Ghost: the check runs on merged people, so each counts once
+    expect(stats.dropped).toBe(2) // Ivy Short and Gus Ghost: the check runs on merged people, so each counts once
   })
 })
