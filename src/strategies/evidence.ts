@@ -108,10 +108,13 @@ export function evidenceStrategy(
             }
 
         }
-        const candidates = rankPeople(mergeMentions(mentions), { now })
+        const merged = mergeMentions(mentions) 
+        const proven = merged.filter((person) => person.evidence.some((e) => e.kind !== 'profile'))
+        dropped += merged.length - proven.length
+        const candidates = rankPeople(proven, { now })
         if (!candidates.length) {
             warnings.push('No Philadelphia candidates found.')
         }
-        return { candidates, stats: { calls: searcher.calls, dropped, warnings } }
+        return { candidates, stats: { calls: searcher.calls, dropped: dropped, warnings } }
     }
 }

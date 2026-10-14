@@ -40,9 +40,9 @@ describe('evidenceStrategy', () => {
 
   it('drops a cited URL that is not in the results, and counts it', async () => {
     const fake = {
-      results: [{ url: 'https://in.example', title: 'In', highlights: ['x'], publishedDate: '2026-01-01' }],
+      results: [{ url: 'https://in.example', title: 'In', text: 'Kept led a workshop on tap automations.', publishedDate: '2026-01-01' }],
       output: { content: { people: [
-        { name: 'Kept', role: 'taught', url: 'https://in.example', philly: true },
+        { name: 'Kept', role: 'taught', url: 'https://in.example', philly: true, quote: 'Kept led a workshop on tap automations' },
         { name: 'Ghost', role: 'taught', url: 'https://not-in-results.example', philly: true },
       ] } },
     }
@@ -79,10 +79,26 @@ describe('evidenceStrategy', () => {
     const kindOf = (name: string) => candidates.find((c) => c.name === name)?.evidence[0]?.kind
     expect(kindOf('Ana Ruiz')).toBe('taught')
     expect(kindOf('Bo Chen')).toBe('built')
-    expect(kindOf('Cy Diaz')).toBe('profile')
     const ana = candidates.find((c) => c.name === 'Ana Ruiz')
     expect(ana?.evidence[0]?.excerpt).toBe('Ana Ruiz led a beginner workshop on LED sewing')
-    const cy = candidates.find((c) => c.name === 'Cy Diaz')
-    expect(cy?.evidence[0]?.excerpt).toBe('') // an invented quote is never shown as proof
+  })
+
+  it('drops a person with no proof at all, and counts them', async () => {
+    const text = 'Ana Ruiz led a beginner workshop on LED sewing at the library. Cy Diaz built a robot arm for the fair.'
+    const page = (url: string) => ({ url, title: 'Page', text, publishedDate: '2026-01-01' })
+    const fake = {
+      results: [page('https://one.example'), page('https://two.example')],
+      output: { content: { people: [
+        // Cy has one invented quote and one real one, so Cy has proof and stays.
+        { name: 'Cy Diaz', role: 'built', url: 'https://one.example', philly: true, quote: 'Cy Diaz invented a new kind of tap card' },
+        { name: 'Cy Diaz', role: 'built', url: 'https://two.example', philly: true, quote: 'Cy Diaz built a robot arm for the fair' },
+        // Iffy Books has only a short quote, and Ghost only an invented one: no proof anywhere.
+        { name: 'Iffy Books', role: 'taught', url: 'https://one.example', philly: true, quote: '- Iffy Books' },
+        { name: 'Ghost', role: 'taught', url: 'https://two.example', philly: true, quote: 'Ghost taught a class on soldering every week' },
+      ] } },
+    }
+    const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
+    expect(candidates.map((c) => c.name)).toEqual(['Cy Diaz'])
+    expect(stats.dropped).toBe(2) // Iffy Books and Ghost: the check runs on merged people, so each counts once
   })
 })
