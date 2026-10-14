@@ -43,6 +43,14 @@ describe('parsePeopleOutput', () => {
     expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
     expect(out.dropped).toBe(3)
   })
+  it('treats placeholder handles such as N/A as no handle, so merge cannot join strangers by them', () => {
+    const out = parsePeopleOutput({ people: ['N/A', 'n/a', ' none ', 'Unknown', '-', 'null'].map((handle) => ({ ...good, handle })) })
+    expect(out.people.map((p) => p.handle)).toEqual([undefined, undefined, undefined, undefined, undefined, undefined])
+    expect(out.dropped).toBe(0)
+  })
+  it('keeps a real handle', () => {
+    expect(parsePeopleOutput({ people: [{ ...good, handle: ' anaruiz ' }] }).people[0]?.handle).toBe('anaruiz')
+  })
   it('keeps an item with no entity field, as older fixtures have none', () => {
     expect(parsePeopleOutput({ people: [good] }).dropped).toBe(0)
   })
