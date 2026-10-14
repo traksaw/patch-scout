@@ -7,8 +7,9 @@ import { checkRole } from '../role.js'
 
 export const EVIDENCE_QUERIES = (theme: string): string[] => {
     return [`${theme} workshop or talk in Philadelphia`,
-    `${theme} open source project by a Philadelphia developer`,
-    `${theme} blog post or tutorial by a Philadelphia builder`]
+    `${theme} meetup in Philadelphia`,
+    `${theme} hackathon or demo night in Philadelphia`
+    ]
 }
 
 export const SYSTEM_PROMPT = [

@@ -11,6 +11,16 @@ describe('evidenceStrategy', () => {
     for (const q of qs) expect(q).not.toMatch(/\b(only|include|exclude|drop|return)\b/i)
   })
 
+  it('searches for local events, not repos or blogs, since those pages rarely name a city', () => {
+    const qs = EVIDENCE_QUERIES('voice agents')
+    for (const q of qs) {
+      expect(q).toContain('voice agents')
+      expect(q).toMatch(/Philadelphia/)
+      expect(q).not.toMatch(/\b(open source|project|developer|blog|tutorial)\b/i)
+    }
+    expect(new Set(qs).size).toBe(3) // three different queries, not one repeated
+  })
+
   it('makes the model say whether each item is a person, a team, an organization, or an event', () => {
     const item = OUTPUT_SCHEMA.properties.people.items
     expect(item.properties.entity.type).toBe('string')
