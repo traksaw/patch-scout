@@ -11,7 +11,8 @@
     "scout": "tsx src/cli.ts",
     "record": "tsx scripts/record-fixtures.ts",
     "eval:pool": "tsx eval/pool.ts",
-    "eval:score": "tsx eval/score.ts"
+    "eval:score": "tsx eval/score.ts",
+    "eval:carry": "tsx eval/carry.ts"
   },
   "engines": {
     "node": ">=22"
