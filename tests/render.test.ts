@@ -19,4 +19,17 @@ describe('renderMarkdown', () => {
     expect(md).toContain('Dropped: 2')
     expect(md).toContain('$0.0123')
   })
+  it('marks a candidate who shares a name with a separate person', () => {
+    const ana = { name: 'Ana Ruiz', handles: [], philly: true, score: 1, breakdown: [], evidence: [] }
+    const md = renderMarkdown('NFC', 'b', {
+      candidates: [
+        { ...ana, possibleDuplicateOf: ['Ana Ruiz'] },
+        { ...ana, name: 'Bo Chen', possibleDuplicateOf: [] },
+      ],
+      stats: { calls: [], dropped: 0, warnings: [] },
+    })
+    expect(md).toContain('1. **Ana Ruiz** · score 1.00 _(possible duplicate of Ana Ruiz)_')
+    expect(md).toContain('2. **Bo Chen** · score 1.00')
+    expect(md).not.toContain('Bo Chen** · score 1.00 _(')
+  })
 })

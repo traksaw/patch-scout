@@ -3,6 +3,7 @@ import { createSearcher, type SearchFn } from '../exa.js'
 import { mergeMentions } from '../merge.js'
 import { rankPeople } from '../rank.js'
 import type { Mention, Evidence, Strategy, Result } from '../types.js'
+import { checkRole } from '../role.js'
 
 export const EVIDENCE_QUERIES = (theme: string): string[] => {
     return [`${theme} workshop or talk in Philadelphia`,
@@ -14,6 +15,9 @@ export const SYSTEM_PROMPT = [
     'Extract the people who did the work shown on each page.',
     'Keep a person only when the page shows they taught, built, or wrote the work.',
     'Set role to taught, built, or wrote to match what the page shows.',
+    'taught means the page shows them teaching a specific workshop, class, course, or talk. A job title such as professor or instructor is not taught.',
+    'built means they made the project. wrote means they wrote the post, tutorial, or article.',
+    'Set quote to one exact sentence copied from the page that shows the role. Copy it word for word. Do not paraphrase.',
     'Set philly to true only when the page ties the person to Philadelphia.',
     "Set url to the page that shows the work. List outbound links from that page to the person's own site or profiles in linkedUrls.",
     'Never guess a name. Omit a person whose name the page does not state.',
@@ -33,8 +37,9 @@ export const OUTPUT_SCHEMA = {
                     url: { type: 'string' },
                     philly: { type: 'boolean' },
                     linkedUrls: { type: 'array', items: { type: 'string' } },
+                    quote: { type: 'string' },
                 },
-                required: ['name', 'role', 'url', 'philly'],
+                required: ['name', 'role', 'url', 'philly', 'quote'],
             },
         },
     },
@@ -68,7 +73,7 @@ export function evidenceStrategy(
                 type: 'auto',
                 systemPrompt: SYSTEM_PROMPT,
                 outputSchema: OUTPUT_SCHEMA,
-                contents: { highlights: true },
+                contents: { text: true },
             })
             if (!res.ok) {
                 warnings.push(`Query failed after retries, skipped: "${query}" (${res.error})`);
@@ -84,12 +89,12 @@ export function evidenceStrategy(
                 if (!hit) { dropped++; continue }
 
                 const relevance = typeof hit.r.score === 'number' ? hit.r.score : 1 - hit.i / results.length
-
+                const kind = checkRole(p.role, p.quote, hit.r.text ?? '')
                 const evidence: Evidence = {
                     url: p.url,
                     title: hit.r.title ?? p.url,
-                    excerpt: hit.r.highlights?.[0] ?? '',
-                    kind: p.role,
+                    excerpt: kind === 'profile' ? '' : p.quote,
+                    kind: kind,
                     publishedDate: hit.r.publishedDate,
                     philly: p.philly,
                     linkedUrls: p.linkedUrls,

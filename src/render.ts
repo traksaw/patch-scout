@@ -17,7 +17,8 @@ export function renderMarkdown(theme: string, strategy: 'a' | 'b', result: Strat
     }
 
     candidates.forEach((c, i) => {
-        lines.push(`${i + 1}. **${c.name}** · score ${c.score.toFixed(2)}`)
+        const dup = c.possibleDuplicateOf.length ? ` _(possible duplicate of ${c.possibleDuplicateOf.join(', ')})_` : ''
+        lines.push(`${i + 1}. **${c.name}** · score ${c.score.toFixed(2)}${dup}`)
         for (const l of c.breakdown) {
             lines.push(`   - ${l.kind} · ${l.contribution.toFixed(2)} · ${l.url}`)
         }

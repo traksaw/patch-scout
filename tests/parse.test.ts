@@ -5,7 +5,7 @@ const good = { name: 'Ana Ruiz', role: 'taught', url: 'https://a.example', phill
 
 describe('parsePeopleOutput', () => {
   it('accepts a valid object', () => {
-    expect(parsePeopleOutput({ people: [good] })).toEqual({ people: [{ ...good, linkedUrls: [] }], dropped: 0 })
+    expect(parsePeopleOutput({ people: [good] })).toEqual({ people: [{ ...good, linkedUrls: [], quote: '' }], dropped: 0 })
   })
   it('accepts the same object as a JSON string', () => {
     expect(parsePeopleOutput(JSON.stringify({ people: [good] })).people).toHaveLength(1)
@@ -24,5 +24,13 @@ describe('parsePeopleOutput', () => {
   })
   it('drops an item whose url is only spaces', () =>  {
     expect(parsePeopleOutput({ people: [{ ...good, url: '   ' }] })).toEqual({ people: [], dropped: 1 })
+  })
+  it('keeps a trimmed quote', () => {
+    expect(parsePeopleOutput({ people: [{ ...good, quote: '  She led the workshop.  ' }] }).people[0]?.quote).toBe('She led the workshop.')
+  })
+  it('treats a missing or non-string quote as empty, not as a drop', () => {
+    const out = parsePeopleOutput({ people: [good, { ...good, quote: 42 }] })
+    expect(out.people.map((p) => p.quote)).toEqual(['', ''])
+    expect(out.dropped).toBe(0)
   })
 })

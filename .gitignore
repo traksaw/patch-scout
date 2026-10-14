@@ -6,3 +6,4 @@ eval/out/
 runs/
 .superpowers/
 .claude/
+eval/out-*/

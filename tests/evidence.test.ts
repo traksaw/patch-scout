@@ -41,4 +41,31 @@ describe('evidenceStrategy', () => {
     expect(stats.warnings).toHaveLength(4)
     expect(stats.warnings.at(-1)).toBe('No Philadelphia candidates found.')
   })
+
+  it('asks Exa for page text, not highlights, so the quote can be checked', async () => {
+    let seen: Record<string, unknown> = {}
+    await evidenceStrategy(async (_q, opts) => { seen = opts; return { results: [] } }, NOW)('t')
+    expect(seen.contents).toEqual({ text: true })
+  })
+
+  it('checks each role against its quote and uses the quote as the excerpt', async () => {
+    const text = 'Last spring Ana Ruiz led a beginner workshop on LED sewing. Bo Chen builds knitted circuits in his lab.'
+    const fake = {
+      results: [{ url: 'https://page.example', title: 'Page', text, publishedDate: '2026-01-01' }],
+      output: { content: { people: [
+        { name: 'Ana Ruiz', role: 'taught', url: 'https://page.example', philly: true, quote: 'Ana Ruiz led a beginner workshop on LED sewing' },
+        { name: 'Bo Chen', role: 'taught', url: 'https://page.example', philly: true, quote: 'Bo Chen builds knitted circuits in his lab' },
+        { name: 'Cy Diaz', role: 'taught', url: 'https://page.example', philly: true, quote: 'Cy Diaz taught a class on soldering' },
+      ] } },
+    }
+    const { candidates } = await evidenceStrategy(async () => fake, NOW)('t')
+    const kindOf = (name: string) => candidates.find((c) => c.name === name)?.evidence[0]?.kind
+    expect(kindOf('Ana Ruiz')).toBe('taught')
+    expect(kindOf('Bo Chen')).toBe('built')
+    expect(kindOf('Cy Diaz')).toBe('profile')
+    const ana = candidates.find((c) => c.name === 'Ana Ruiz')
+    expect(ana?.evidence[0]?.excerpt).toBe('Ana Ruiz led a beginner workshop on LED sewing')
+    const cy = candidates.find((c) => c.name === 'Cy Diaz')
+    expect(cy?.evidence[0]?.excerpt).toBe('') // an invented quote is never shown as proof
+  })
 })
