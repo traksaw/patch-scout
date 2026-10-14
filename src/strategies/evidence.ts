@@ -23,6 +23,7 @@ export const SYSTEM_PROMPT = [
     "Set url to the page that shows the work. List outbound links from that page to the person's own site or profiles in linkedUrls.",
     'Set entity to person for one individual human, to organization for a company or group, to team for a named team, and to event for an event or meetup.',
     'Never guess a name. Omit a person whose name the page does not state.',
+    'Go through every page one by one. Return every named person from every page that shows their work, not only the first few. A list of ten or more people is fine.'
 ].join(' ')
 
 export const OUTPUT_SCHEMA = {
