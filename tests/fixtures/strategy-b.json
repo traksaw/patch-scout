@@ -1,222 +1,106 @@
 {
-  "requestId": "67a96fca2ff9a99e24585ad8024b5813",
-  "resolvedSearchType": "",
   "results": [
     {
-      "id": "https://luma.com/p30z896q",
-      "title": "PATCH 002: TAP IN NFC LAB - Luma",
-      "url": "https://luma.com/p30z896q",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "url": "https://example.org/event-01",
+      "title": "Event page 01",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
     },
     {
-      "id": "https://somo.social/e/patch-002-nfc-lab-30-juli-2026",
-      "title": "PATCH 002: TAP IN NFC LAB – Friday, July 31 2026",
-      "url": "https://somo.social/e/patch-002-nfc-lab-30-juli-2026",
-      "author": "Somo",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "url": "https://example.org/event-02",
+      "title": "Event page 02",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
     },
     {
-      "id": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-      "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works.",
-      "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
+      "url": "https://example.org/event-03",
+      "title": "Event page 03",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
+    },
+    {
+      "url": "https://example.org/event-04",
+      "title": "Event page 04",
+      "publishedDate": "2026-07-16T00:00:00.000Z",
+      "score": null,
+      "text": "An event page with no named people."
+    },
+    {
+      "url": "https://example.org/event-05",
+      "title": "Event page 05",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
+    },
+    {
+      "url": "https://example.org/event-06",
+      "title": "Event page 06",
       "publishedDate": "2026-08-04T00:00:00.000Z",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "score": null,
+      "text": "Our design lead, Person B01, designed the curriculum, 3D-printed a PhilaCon pigeon with an embedded NFC tag, and taught the room how to go from reading a tag to writing one to wiring it into a shortcut or automation."
     },
     {
-      "id": "https://momentsapp.no/event/24f47017-98c6-4d88-bcc9-cda10444002b",
-      "title": "PATCH 002: TAP IN NFC LAB — Pennovation Center, Philadelphia — Thursday, Jul 30 at 18:00 | Moments",
-      "url": "https://momentsapp.no/event/24f47017-98c6-4d88-bcc9-cda10444002b",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
-    },
-    {
-      "id": "https://www.linkedin.com/posts/philaconvalley_activity-7483645770215153664-j4y8",
-      "title": "I used to think NFC was just \"the thing that makes Apple Pay work.\" | PhilaCon Valley",
-      "url": "https://www.linkedin.com/posts/philaconvalley_activity-7483645770215153664-j4y8",
+      "url": "https://example.org/event-07",
+      "title": "Event page 07",
       "publishedDate": "2026-07-16T00:00:00.000Z",
-      "author": "PhilaCon Valley",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "score": null,
+      "text": "An event page with no named people."
     },
     {
-      "id": "https://iffybooks.net/event/nfc-sculpture-july-13/",
-      "title": "✨ NFC Sculpture Workshop – Iffy Books  |  404 S. 20th St., PHL",
-      "url": "https://iffybooks.net/event/nfc-sculpture-july-13/",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "url": "https://example.org/event-08",
+      "title": "Event page 08",
+      "publishedDate": null,
+      "score": null,
+      "text": "About the Instructor: Hi, I'm Person B02! I teach the NFC tag workshop at the library."
     },
     {
-      "id": "https://www.eventbrite.com/e/spark-one-tap-ahead-20-tickets-1992660692773",
-      "title": "SPARK - One Tap Ahead 2.0 Tickets, Tuesday, October 20  •  1 PM - 2 PM | Eventbrite",
-      "url": "https://www.eventbrite.com/e/spark-one-tap-ahead-20-tickets-1992660692773",
-      "publishedDate": "2026-06-26T18:53:27.000Z",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "url": "https://example.org/event-09",
+      "title": "Event page 09",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
     },
     {
-      "id": "https://www.linkedin.com/posts/philaconvalley_philly-you-tap-to-pay-tap-to-board-now-activity-7483645712887582720-_ZKg",
-      "title": "Philly!! You tap to pay, tap to board. Now tap in with us to learn the fundamentals and create your own custom NFC tag.",
-      "url": "https://www.linkedin.com/posts/philaconvalley_philly-you-tap-to-pay-tap-to-board-now-activity-7483645712887582720-_ZKg",
-      "publishedDate": "2026-07-16T00:00:00.000Z",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
-    },
-    {
-      "id": "https://library.temple.edu/events/1991",
-      "title": "Electronics Faire: NFC Tag workshop with Person B02",
-      "url": "https://library.temple.edu/events/1991",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
-    },
-    {
-      "id": "https://www.linkedin.com/posts/person-b03_nfc-activity-0000000000000000000",
-      "title": "Placeholder post about an NFC lab.",
-      "url": "https://www.linkedin.com/posts/person-b03_nfc-activity-0000000000000000000",
-      "publishedDate": "2026-07-31T00:00:00.000Z",
-      "highlights": [
-        "Placeholder excerpt."
-      ]
+      "url": "https://example.org/event-10",
+      "title": "Event page 10",
+      "publishedDate": null,
+      "score": null,
+      "text": "An event page with no named people."
     }
   ],
-  "searchTime": 1051.5,
-  "costDollars": {
-    "total": 0.007,
-    "search": {
-      "neural": 0.007
-    }
-  },
   "output": {
     "content": {
       "people": [
         {
           "name": "Person B01",
+          "handle": "",
           "role": "taught",
-          "handle": "Person B01",
+          "url": "https://example.org/event-06",
           "philly": true,
-          "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s"
+          "linkedUrls": [],
+          "quote": "Our design lead, Person B01, designed the curriculum, 3D-printed a PhilaCon pigeon with an embedded NFC tag, and taught the room how to go from reading a tag to writing one to wiring it into a shortcut or automation.",
+          "entity": "person"
         },
         {
           "name": "Person B02",
-          "philly": true,
+          "handle": "",
           "role": "taught",
-          "handle": "Person B02",
-          "url": "https://library.temple.edu/events/1991"
+          "url": "https://example.org/event-08",
+          "philly": true,
+          "linkedUrls": [],
+          "quote": "About the Instructor: Hi, I'm Person B02! I teach the NFC tag workshop at the library.",
+          "entity": "person"
         }
       ]
-    },
-    "grounding": [
-      {
-        "field": "people[0].name",
-        "citations": [
-          {
-            "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-            "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works."
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[0].role",
-        "citations": [
-          {
-            "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-            "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works."
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[0].handle",
-        "citations": [
-          {
-            "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-            "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works."
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[0].philly",
-        "citations": [
-          {
-            "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-            "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works."
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[0].url",
-        "citations": [
-          {
-            "url": "https://www.linkedin.com/posts/waskar-m-paulino_philacon-philadelphia-nfc-activity-7490483425439637505-p57s",
-            "title": "Last Thursday, we ran PATCH 002: TAP IN NFC LAB at Pennovation Works."
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[1].name",
-        "citations": [
-          {
-            "url": "https://library.temple.edu/events/1991",
-            "title": "Electronics Faire: NFC Tag workshop with Person B02"
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[1].philly",
-        "citations": [
-          {
-            "url": "https://library.temple.edu/events/1991",
-            "title": "Electronics Faire: NFC Tag workshop with Person B02"
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[1].role",
-        "citations": [
-          {
-            "url": "https://library.temple.edu/events/1991",
-            "title": "Electronics Faire: NFC Tag workshop with Person B02"
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[1].handle",
-        "citations": [
-          {
-            "url": "https://library.temple.edu/events/1991",
-            "title": "Electronics Faire: NFC Tag workshop with Person B02"
-          }
-        ],
-        "confidence": "high"
-      },
-      {
-        "field": "people[1].url",
-        "citations": [
-          {
-            "url": "https://library.temple.edu/events/1991",
-            "title": "Electronics Faire: NFC Tag workshop with Person B02"
-          }
-        ],
-        "confidence": "high"
-      }
-    ]
+    }
+  },
+  "costDollars": {
+    "total": 0.007,
+    "search": {
+      "neural": 0.007
+    }
   }
 }

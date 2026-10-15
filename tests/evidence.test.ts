@@ -32,6 +32,7 @@ describe('evidenceStrategy', () => {
     const run = evidenceStrategy(async () => fixture, NOW)
     const { candidates, stats } = await run('NFC and tap automations')
     expect(stats.calls).toHaveLength(3)
+    expect(candidates.length).toBeGreaterThan(0) // without this, an empty list passes the loop below
     for (const c of candidates) {
       expect(c.evidence.some((e) => e.philly)).toBe(true)
       expect(c.evidence.length).toBeGreaterThan(0)
