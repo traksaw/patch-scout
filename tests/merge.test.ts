@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mergeMentions } from '../src/merge.js'
+import { mergeMentions, nameKey } from '../src/merge.js'
 import type { Evidence, Mention } from '../src/types.js'
 
 function ev(url: string, over: Partial<Evidence> = {}): Evidence {
@@ -76,5 +76,48 @@ describe('mergeMentions', () => {
   it('keeps unrelated people separate, in input order', () => {
     const out = mergeMentions([m('Ana Ruiz', 'https://a.example'), m('Bo Chen', 'https://b.example')])
     expect(out.map((p) => p.name)).toEqual(['Ana Ruiz', 'Bo Chen'])
+  })
+
+  it('merges name variants that differ only by text in parentheses', () => {
+    const out = mergeMentions([m('Tony (Yun Sing) Siu', 'https://a.example'), m('Tony Siu', 'https://b.example')])
+    expect(out).toHaveLength(1)
+  })
+
+  it('merges a name with a middle initial and the same name without one', () => {
+    const out = mergeMentions([m('Waskar M. Paulino', 'https://a.example'), m('Waskar Paulino', 'https://b.example')])
+    expect(out).toHaveLength(1)
+  })
+
+  it('does not merge two different middle initials, and flags both', () => {
+    const out = mergeMentions([m('John A. Smith', 'https://a.example'), m('John B. Smith', 'https://b.example')])
+    expect(out).toHaveLength(2)
+    expect(out[0]?.possibleDuplicateOf).toEqual(['John B. Smith'])
+    expect(out[1]?.possibleDuplicateOf).toEqual(['John A. Smith'])
+  })
+
+  it('flags a first name with a last initial against the full name, without merging', () => {
+    const out = mergeMentions([m('Tony S.', 'https://a.example'), m('Tony Siu', 'https://b.example')])
+    expect(out).toHaveLength(2)
+    expect(out[0]?.possibleDuplicateOf).toEqual(['Tony Siu'])
+    expect(out[1]?.possibleDuplicateOf).toEqual(['Tony S.'])
+  })
+
+  it('does not flag a short form whose initial does not match', () => {
+    const out = mergeMentions([m('Tony B.', 'https://a.example'), m('Tony Siu', 'https://b.example')])
+    expect(out[0]?.possibleDuplicateOf).toEqual([])
+  })
+})
+
+describe('nameKey', () => {
+  it('lowercases, drops text in parentheses and single-letter initials, and collapses spaces', () => {
+    expect(nameKey('Tony (Yun Sing) Siu')).toBe('tony siu')
+    expect(nameKey('Waskar M. Paulino')).toBe('waskar paulino')
+    expect(nameKey('  Ana   Ruiz ')).toBe('ana ruiz')
+  })
+
+  it('keeps apostrophes, hyphens, and accents', () => {
+    expect(nameKey("Ana O'Neil")).toBe("ana o'neil")
+    expect(nameKey('Diego Mendoza-Ramos')).toBe('diego mendoza-ramos')
+    expect(nameKey('Yōsuke Araki')).toBe('yōsuke araki')
   })
 })

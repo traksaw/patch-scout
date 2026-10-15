@@ -48,6 +48,26 @@ describe('parsePeopleOutput', () => {
     expect(out.people.map((p) => p.handle)).toEqual([undefined, undefined, undefined, undefined, undefined, undefined])
     expect(out.dropped).toBe(0)
   })
+  it('drops items whose name is a placeholder or has no letters, and counts them', () => {
+    const junk = ['null', 'N/A', ' None ', '/', '-', '123']
+    const out = parsePeopleOutput({ people: [good, ...junk.map((name) => ({ ...good, name }))] })
+    expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
+    expect(out.dropped).toBe(junk.length)
+  })
+  it('keeps short real names and names with accents', () => {
+    const out = parsePeopleOutput({ people: ['Jo Li', 'Yōsuke Araki', "Ana O'Neil"].map((name) => ({ ...good, name })) })
+    expect(out.people).toHaveLength(3)
+  })
+  it('drops org-like names and one-word names, since the model labels orgs as people', () => {
+    const orgs = ['Philly SIGGRAPH Chapter', 'PhilaCon Valley', 'Philly Electronic Music Club', 'Iffy Books', 'philly', 'hardworkparty', 'Jacob']
+    const out = parsePeopleOutput({ people: [good, ...orgs.map((name) => ({ ...good, name, entity: 'person' }))] })
+    expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
+    expect(out.dropped).toBe(orgs.length)
+  })
+  it('keeps people whose surnames are also place or building words', () => {
+    const names = ['Richard Green', 'Ana Hall', 'Bo Park', 'Cy Booker']
+    expect(parsePeopleOutput({ people: names.map((name) => ({ ...good, name })) }).people).toHaveLength(names.length)
+  })
   it('keeps a real handle', () => {
     expect(parsePeopleOutput({ people: [{ ...good, handle: ' anaruiz ' }] }).people[0]?.handle).toBe('anaruiz')
   })

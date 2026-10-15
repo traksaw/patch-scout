@@ -1,6 +1,13 @@
 import { ExtractedPerson } from "./types.js"
 const ROLES = new Set(['taught', 'built', 'wrote'])
 const PLACEHOLDERS = new Set(['n/a', 'none', 'unknown', '-', 'null'])
+const ORG_WORDS = new Set([
+    'chapter', 'club', 'books', 'valley', 'center', 'society', 'association', 'team', 'group',
+    'organization', 'company', 'inc', 'llc', 'ltd', 'foundation', 'institute', 'school',
+    'academy', 'university', 'college', 'committee', 'council', 'network', 'lab', 'labs',
+    'laboratory', 'studio', 'magazine', 'conference', 'festival', 'expo', 'meetup',
+    'hackathon', 'workshop', 'collective',
+])
 export function isRecord(v: unknown): v is Record<string, unknown> {
     if (typeof v === 'object' && v !== null && !Array.isArray(v)) return true
     return false
@@ -33,12 +40,13 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const linkedUrls = Array.isArray(item.linkedUrls) ? item.linkedUrls.filter((u): u is string => typeof u === 'string') : []
         const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
         const entity = typeof item.entity === 'string' ? item.entity : ''
-        if (name === '' || url === '' || !ROLES.has(role) || (entity.length > 0 && entity !== 'person')) { dropped++; continue }
+        const words = name.toLowerCase().split(/\s+/)
+        if ((name === '' || url === '') || (!ROLES.has(role) || (words.some((word) => ORG_WORDS.has(word)) || words.length < 2) || (entity.length > 0 && entity !== 'person') || (PLACEHOLDERS.has(name.toLowerCase()) || !/\p{L}/u.test(name)))) { dropped++; continue }
         people.push({
             name,
             url,
             role: role as ExtractedPerson['role'], // safe: ROLES.has(role) checked it above
-            handle: PLACEHOLDERS.has(handle.toLowerCase()) || handle.length === 0 ? undefined : handle, 
+            handle: PLACEHOLDERS.has(handle.toLowerCase()) || handle.length === 0 ? undefined : handle,
             philly: philly,
             linkedUrls: linkedUrls,
             quote: quote,
