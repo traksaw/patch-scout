@@ -1,5 +1,4 @@
 import type { Mention, MergedPerson } from './types.js'
-
 function find(boss: number[], i: number): number {
     //follow boss[i] up until you reach an index that is its own boss
     while (boss[i] !== i) {
@@ -61,7 +60,7 @@ export function mergeMentions(mentions: Mention[]): MergedPerson[] {
     const people = [...sheets.values()]
     for (let i = 0; i < people.length; i++) {
         for (let j = i + 1; j < people.length; j++) {
-            if (normalizeName(people[i]!.name) === normalizeName(people[j]!.name)) { //this will compare if the names are the same in each merged person sheet
+            if (nameKey(people[i]!.name) === nameKey(people[j]!.name) || (isShortFormOf(people[i]!.name, people[j]!.name)) || isShortFormOf(people[j]!.name, people[i]!.name)) { //this will compare if the names are the same in each merged person sheet
                 people[i]!.possibleDuplicateOf.push(people[j]!.name); // mark the other person as a possible duplicate 
                 people[j]!.possibleDuplicateOf.push(people[i]!.name);
             }
@@ -69,10 +68,6 @@ export function mergeMentions(mentions: Mention[]): MergedPerson[] {
     }
     return people // return the list of merged people with possible duplicates marked
 }
-
-
-
-
 
 //isSamePerson checks if two mentions refer to the same person based on handle or linked URLs as well as the name match.
 
@@ -86,7 +81,7 @@ function isSamePerson(a: Mention, b: Mention): boolean {
         return true
     }
 
-    if (a.evidence.philly && b.evidence.philly && normalizeName(a.name) === normalizeName(b.name)) {
+    if ((a.evidence.philly && b.evidence.philly) && (nameKey(a.name) === nameKey(b.name)) && !(initials(a.name) !== '' && initials(b.name) !== '' && initials(a.name) !== initials(b.name))) {
         return true
     }
     // If neither the handles nor the linked URLs match, the mentions are not considered the same person, so we will make a new pile
@@ -98,3 +93,26 @@ export function normalizeName(name: string): string {
     return name.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
+export function nameKey(name: string): string {
+    return normalizeName(name.replace(/\(.*?\)/g, ' '))
+        .split(/\s+/)
+        .filter((word) => !/^\p{L}\.?$/u.test(word))
+        .join(' ')
+}
+
+function initials(name: string): string {
+    return normalizeName(name.replace(/\(.*?\)/g, ' '))
+        .split(/\s+/)
+        .filter((word) => /^\p{L}\.?$/u.test(word))     // keep ONLY the one-letter words
+        .map((word) => word.replace('.', ''))           // 'm.' → 'm'
+        .join('')
+}
+
+function isShortFormOf(short: string, full: string): boolean {
+    const s = normalizeName(short).split(/\s+/)
+    const f = normalizeName(full).split(/\s+/)
+
+    if (s.length !== 2 || f.length < 2) return false 
+    const initial = s[1]!.replace('.','')
+    return initial.length === 1 && s[0] === f[0] && f.at(-1)!.startsWith(initial)
+}
