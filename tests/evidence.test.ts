@@ -40,15 +40,15 @@ describe('evidenceStrategy', () => {
 
   it('drops a cited URL that is not in the results, and counts it', async () => {
     const fake = {
-      results: [{ url: 'https://in.example', title: 'In', text: 'Kept led a workshop on tap automations.', publishedDate: '2026-01-01' }],
+      results: [{ url: 'https://in.example', title: 'In', text: 'Kim Kept led a workshop on tap automations.', publishedDate: '2026-01-01' }],
       output: { content: { people: [
-        { name: 'Kept', role: 'taught', url: 'https://in.example', philly: true, quote: 'Kept led a workshop on tap automations' },
-        { name: 'Ghost', role: 'taught', url: 'https://not-in-results.example', philly: true },
+        { name: 'Kim Kept', role: 'taught', url: 'https://in.example', philly: true, quote: 'Kim Kept led a workshop on tap automations' },
+        { name: 'Gil Ghost', role: 'taught', url: 'https://not-in-results.example', philly: true },
       ] } },
     }
     const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
-    expect(candidates.map((c) => c.name)).toEqual(['Kept'])
-    expect(stats.dropped).toBe(3) // Ghost once per query x 3 queries
+    expect(candidates.map((c) => c.name)).toEqual(['Kim Kept'])
+    expect(stats.dropped).toBe(3) // Gil Ghost once per query x 3 queries
   })
 
   it('survives every query failing', async () => {
