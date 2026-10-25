@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evidenceStrategy, EVIDENCE_QUERIES, OUTPUT_SCHEMA } from '../src/strategies/evidence.js'
+import { evidenceStrategy, EVIDENCE_QUERIES, EVIDENCE_SEARCHES, VENUE_DOMAINS, OUTPUT_SCHEMA } from '../src/strategies/evidence.js'
 import fixture from './fixtures/strategy-b.json' with { type: 'json' }
 
 const NOW = new Date('2026-10-01T00:00:00Z')
@@ -21,6 +21,28 @@ describe('evidenceStrategy', () => {
     expect(new Set(qs).size).toBe(3) // three different queries, not one repeated
   })
 
+  it('runs each query twice: once on the open web and once on Philadelphia venue sites', () => {
+    const searches = EVIDENCE_SEARCHES('voice agents')
+    const queries = EVIDENCE_QUERIES('voice agents')
+    expect(searches).toHaveLength(6)
+    expect(searches.filter((s) => s.includeDomains === undefined).map((s) => s.query)).toEqual(queries)
+    expect(searches.filter((s) => s.includeDomains === VENUE_DOMAINS).map((s) => s.query)).toEqual(queries)
+  })
+
+  it('lists venue sites as bare domains, without the organizer\'s own pages', () => {
+    expect(VENUE_DOMAINS.length).toBeGreaterThan(0)
+    for (const d of VENUE_DOMAINS) {
+      expect(d).not.toMatch(/^https?:|\/|\s/) // 'temple.edu', not 'https://temple.edu/'
+      expect(d).not.toMatch(/philacon/i)
+    }
+  })
+
+  it('passes each search\'s includeDomains to Exa', async () => {
+    const seen: Record<string, unknown>[] = []
+    await evidenceStrategy(async (_q, opts) => { seen.push(opts); return { results: [] } }, NOW)('t')
+    expect(seen.map((o) => o.includeDomains)).toEqual([undefined, undefined, undefined, VENUE_DOMAINS, VENUE_DOMAINS, VENUE_DOMAINS])
+  })
+
   it('makes the model say whether each item is a person, a team, an organization, or an event', () => {
     const item = OUTPUT_SCHEMA.properties.people.items
     expect(item.properties.entity.type).toBe('string')
@@ -31,7 +53,7 @@ describe('evidenceStrategy', () => {
   it('runs end to end on the recorded fixture', async () => {
     const run = evidenceStrategy(async () => fixture, NOW)
     const { candidates, stats } = await run('NFC and tap automations')
-    expect(stats.calls).toHaveLength(3)
+    expect(stats.calls).toHaveLength(6)
     expect(candidates.length).toBeGreaterThan(0) // without this, an empty list passes the loop below
     for (const c of candidates) {
       expect(c.evidence.some((e) => e.philly)).toBe(true)
@@ -49,14 +71,14 @@ describe('evidenceStrategy', () => {
     }
     const { candidates, stats } = await evidenceStrategy(async () => fake, NOW)('t')
     expect(candidates.map((c) => c.name)).toEqual(['Kim Kept'])
-    expect(stats.dropped).toBe(3) // Gil Ghost once per query x 3 queries
+    expect(stats.dropped).toBe(6) // Gil Ghost once per search x 6 searches
   })
 
   it('survives every query failing', async () => {
     const run = evidenceStrategy(async () => { throw new Error('down') }, NOW, { sleep: async () => {} })
     const { candidates, stats } = await run('t')
     expect(candidates).toEqual([])
-    expect(stats.warnings).toHaveLength(4)
+    expect(stats.warnings).toHaveLength(7) // 6 failed searches + 'No Philadelphia candidates found.'
     expect(stats.warnings.at(-1)).toBe('No Philadelphia candidates found.')
   })
 

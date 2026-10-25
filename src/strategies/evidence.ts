@@ -11,6 +11,14 @@ export const EVIDENCE_QUERIES = (theme: string): string[] => {
     `${theme} hackathon or demo night in Philadelphia`
     ]
 }
+export const VENUE_DOMAINS = ['nextfab.com', 'hive76.org', 'iffybooks.net', 'temple.edu', 'drexel.edu', 'upenn.edu', 'freelibrary.org', 'meetup.com', 'thefusefactory.org', 'philadelphia.siggraph.org']
+export const EVIDENCE_SEARCHES = (theme: string): { query: string; includeDomains?: string[] }[] => {
+    const texts = EVIDENCE_QUERIES(theme)
+    return [
+        ...texts.map((text) => ({ query: text })),
+        ...texts.map((text) => ({ query: text, includeDomains: VENUE_DOMAINS })),
+    ]
+}
 
 export const SYSTEM_PROMPT = [
     'Extract the people who did the work shown on each page.',
@@ -72,12 +80,13 @@ export function evidenceStrategy(
         const warnings: string[] = []
         let dropped = 0
 
-        for (const query of EVIDENCE_QUERIES(theme)) {
+        for (const { query, includeDomains } of EVIDENCE_SEARCHES(theme)) {
             const res = await searcher.search(query, {
                 type: 'auto',
                 systemPrompt: SYSTEM_PROMPT,
                 outputSchema: OUTPUT_SCHEMA,
                 contents: { text: true },
+                includeDomains,
             })
             if (!res.ok) {
                 warnings.push(`Query failed after retries, skipped: "${query}" (${res.error})`);
@@ -108,7 +117,7 @@ export function evidenceStrategy(
             }
 
         }
-        const merged = mergeMentions(mentions) 
+        const merged = mergeMentions(mentions)
         const proven = merged.filter((person) => person.evidence.some((e) => e.kind !== 'profile'))
         dropped += merged.length - proven.length
         const candidates = rankPeople(proven, { now })
