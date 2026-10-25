@@ -20,7 +20,7 @@ Add `--strategy a` to run the baseline instead. The default is strategy B.
 
 Strategy B (evidence-first) is the product. It looks for the work first and finds the people through it:
 
-1. **Search for local events.** Run three Exa searches per theme: workshops or talks, meetups, and hackathons or demo nights, each in Philadelphia. Event pages name a person, a place, and a date on the same page. Earlier versions also searched for open-source projects and blog posts, but those pages rarely name a city: across three themes they gave 3 Philadelphia people from 60 pages, against 7 from 30 workshop pages.
+1. **Search for local events, twice.** Run three Exa searches per theme: workshops or talks, meetups, and hackathons or demo nights, each in Philadelphia. Then run the same three again, limited with `includeDomains` to Philadelphia venue sites (Temple, Drexel, Penn, the Free Library, NextFab, Hive76, Iffy Books, Meetup, and others). Event pages name a person, a place, and a date on the same page, and the venue sites reach people the open web misses: in a test, the two searches shared only 5 of 18 people.
 2. **Extract people with `outputSchema`.** Each search asks Exa for structured output: the name, the role (`taught`, `built`, or `wrote`), the page that shows the work, whether the page ties the person to Philadelphia, the person's own links, and whether the item is a `person`, `organization`, `team`, or `event`.
 3. **Clean the model's output.** The model labels organizations as people and fills empty fields with placeholders, so the code checks the names itself. It drops a name that is a placeholder (`null`, `N/A`), has no letters, has only one word (`philly`, `Jacob`), or contains an organization word (`club`, `books`, `chapter`, `valley`, ...). It also drops items the model marks as not a person, and treats placeholder handles as no handle (see the merge rules below).
 4. **Check each cited URL against the results.** The code drops a person when the cited page is not one of the search results that came back. The model must point to a page the search actually returned.
@@ -35,22 +35,24 @@ Strategy A (people category) is the baseline. It runs one Exa search with `categ
 
 Three themes (sound-reactive visuals, NFC and tap automations, voice agents). For each theme, both strategies ran, the results were pooled, and one judge labeled every person blind to which strategy found them. The rule: `yes` only when the evidence link shows the person doing the theme (built it, taught it, performed it, spoke on it). A matching job title or skills list alone is `no`. The judge is also a PhilaCon Valley organizer and labels their own entry `no` wherever it appears.
 
-Latest run (2026-10-14, with the name and proof filters, 37 labeled people):
+Latest run (2026-10-24, with venue-site searches, 47 labeled people):
 
 | Method | Precision@10 | Avg returned | Relative recall | $ / theme | s / theme | 
 |---|---|---|---|---|---|
-| A: people category | 43% | 9.7 | 57% | $0.0070 | 3.0 |
-| B: evidence-first | 23% | 2.7 | 43% | $0.0210 | 14.5 |
+| A: people category | 33% | 9.0 | 35% | $0.0070 | 1.3 |
+| B: evidence-first | 57% | 6.7 | 65% | $0.0420 | 22.7 |
 
 **How to read this table:**
 
-- **Precision@10 divides by 10 even when a strategy returns fewer names.** Strategy B returned 8 people across the three themes, so most of its slots are empty. Per name returned, B is far more accurate: 7 of its 8 names were `yes` (88%), against 13 of 29 for A (45%).
-- **A finds more good people in total.** The pool held 20 `yes` people. A found 13, B found 7, and no person was found by both. B found 2 of the 3 NFC people; A found 8 of the 9 voice-agent people.
-- **B costs 3× more and takes about 5× longer**, because it runs three searches with structured output and downloads each page's full text for the role check.
+- **B now leads on every measure of quality.** Per name returned, 17 of B's 20 names were `yes` (85%), against 10 of 27 for A (37%). One person appears twice in B's list under two spellings, so B found 16 different correct people, about twice as many as any earlier version.
+- **The venue searches did most of the work.** Voice agents went from 1 correct person to 8. Most new people came from university and library event pages and a Drexel hackathon story, which the open-web searches never returned.
+- **The pool held 27 `yes` rows** (26 different people). A found 10, B found 17, and no person was found by both.
+- **B costs 6× more than A and takes about 17× longer**, because it runs six searches with structured output and downloads each page's full text for the role check. The searches run one after another; running them in parallel is the next step.
+- **Before publishing, four risky `yes` labels were checked against their pages.** Two became `no`: an online real-estate automation session from a New Jersey Meetup group (under NFC), and a speaker's marketing page that only names Philadelphia (under voice agents). Both came from loose matches, not from the venue calendars.
 
-The honest summary: **strategy B is precise, but it finds only about 3 people per theme. Strategy A finds about 10, and more than half of them are wrong.** The two find different people, so they work best together.
+The honest summary: **strategy B is now both precise and useful: about 5 correct people per theme, against about 3 for A.** The two still find different people, so a combined list would be larger than either.
 
-The sample is small (37 labeled people, 8 from B, one judge). One label moves B's per-name precision by about 12 points, so treat these numbers as a direction, not a measurement.
+The sample is small (47 labeled people, one judge, one run). The gap between B's 57% and its earlier 23% is far larger than the run-to-run noise seen so far (about 10 points), so it is very likely real, but treat the exact numbers as a direction.
 
 ### Per-page extraction: tried, and not kept
 
@@ -62,7 +64,7 @@ Strategy B asks Exa for one structured answer for each whole search, and the mod
 | One answer per page, all filters | 17 | 9 | 53% | 30% | $0.051 | 34.5 |
 | **One answer per search, all filters (current)** | 8 | 7 | 88% | 23% | $0.021 | 14.5 |
 
-Per-page extraction nearly doubled the names but added at most one or two correct people, which is within run-to-run noise. Most new names were organizations the word list missed and people from off-topic hackathons. It cost 2.4× more and ran more than twice as slowly as the current version, so B keeps one answer per search. Every version found about 8 correct people across the three themes, which points at the searches, not the extraction, as the limit.
+Per-page extraction nearly doubled the names but added at most one or two correct people, which is within run-to-run noise. Most new names were organizations the word list missed and people from off-topic hackathons. It cost 2.4× more and ran more than twice as slowly as the current version, so B keeps one answer per search. Every version found about 8 correct people across the three themes, which pointed at the searches, not the extraction, as the limit. Adding the venue-site searches later confirmed it: B's correct people doubled with no change to extraction.
 
 ### Earlier runs, and bugs that affected them
 
@@ -71,7 +73,8 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 | 2026-10-10 | first version | 20% | 6 of 8 | 53% |
 | 2026-10-13 | role check | 20% | 6 of 9 | 52% |
 | 2026-10-13 | entity field, event queries, handle fix | 27% | 8 of 9 | 59% |
-| 2026-10-14 | name and proof filters (current) | 23% | 7 of 8 | 43% |
+| 2026-10-14 | name and proof filters | 23% | 7 of 8 | 43% |
+| 2026-10-24 | venue-site searches (current) | 57% | 17 of 20 | 65% |
 
 **The first two B rows were affected by a merge bug.** The model writes `"N/A"` as the handle for anyone with no handle on the page. Merge rule 1 joins mentions with matching handles, so every such person in a run became one person holding the others' evidence. In one run, one person's evidence included two other people's event pages, and those two people disappeared from the list. The parser now treats placeholder handles as missing.
 
@@ -101,16 +104,19 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 - Recall is relative to the pooled results of these two strategies, not to every qualified person in Philadelphia.
 - The ranking weights are not tuned.
 - The organization word list is hand-made and misses some names.
+- The venue list is hand-made. `meetup.com` is on it but hosts groups from anywhere, which let in a New Jersey group.
+- A hyphenated second surname is not merged with the shorter name ("Diego Mendoza" and "Diego Mendoza-Ramos" appear as two people).
 
 ## Next steps
 
 In order of expected value:
 
-1. **Search more kinds of local sources.** Every version of B found about 8 correct people across three themes, whether it read each page on its own or not. The limit is which pages the three event searches return, and PhilaCon Valley's own pages fill many of those slots. Try more source types (venue calendars such as makerspaces and libraries, university event pages, meetup group pages, local news) and filter out the organizer's own pages, so B finds people the organizers do not already know.
-2. **Make the eval repeatable.** Run each strategy three times per theme and report the average and the spread. Until then, a gain smaller than about 10 points of Precision@10 cannot be told apart from noise.
-3. **Combine A and B.** They found no person in common across two runs. B's precise list plus A's best profiles may beat either one alone.
-4. **Run B's three searches in parallel.** They run one after another today. Running them at the same time should bring the time close to the slowest single search.
-5. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
-6. **Label each role, not only each person,** so the eval can measure the role check.
-7. **More themes and a second judge** who is not an organizer.
-8. **A web page on Vercel,** so organizers can use it without a terminal.
+1. **Run B's six searches in parallel.** They run one after another today, at about 23 seconds per theme. Running them at the same time should bring that close to the slowest single search.
+2. **Tighten the venue list.** Replace `meetup.com` with the specific Philadelphia groups that host theme events, and add other venue calendars (galleries, community centers, local news event listings). Measure new correct people per added site.
+3. **Make the eval repeatable.** Run each strategy three times per theme and report the average and the spread. Until then, a gain smaller than about 10 points of Precision@10 cannot be told apart from noise.
+4. **Combine A and B.** They found no person in common across three runs. B's list plus A's best profiles may beat either one alone.
+5. **Merge hyphenated surnames,** so a person with one or two surnames is one candidate.
+6. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
+7. **Label each role, not only each person,** so the eval can measure the role check.
+8. **More themes and a second judge** who is not an organizer.
+9. **A web page on Vercel,** so organizers can use it without a terminal.
