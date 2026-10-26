@@ -47,7 +47,7 @@ Latest run (2026-10-24, with venue-site searches, 47 labeled people):
 - **B now leads on every measure of quality.** Per name returned, 17 of B's 20 names were `yes` (85%), against 10 of 27 for A (37%). One person appears twice in B's list under two spellings, so B found 16 different correct people, about twice as many as any earlier version.
 - **The venue searches did most of the work.** Voice agents went from 1 correct person to 8. Most new people came from university and library event pages and a Drexel hackathon story, which the open-web searches never returned.
 - **The pool held 27 `yes` rows** (26 different people). A found 10, B found 17, and no person was found by both.
-- **B costs 6× more than A and takes about 17× longer**, because it runs six searches with structured output and downloads each page's full text for the role check. The searches run one after another; running them in parallel is the next step.
+- **B costs 6× more than A**, because it runs six searches with structured output and downloads each page's full text for the role check. The 22.7 s in the table was measured when the six searches ran one after another. They now run in parallel: one timed run for voice agents took 5.1 s, against about 24 s before.
 - **Before publishing, four risky `yes` labels were checked against their pages.** Two became `no`: an online real-estate automation session from a New Jersey Meetup group (under NFC), and a speaker's marketing page that only names Philadelphia (under voice agents). Both came from loose matches, not from the venue calendars.
 
 The honest summary: **strategy B is now both precise and useful: about 5 correct people per theme, against about 3 for A.** The two still find different people, so a combined list would be larger than either.
@@ -111,12 +111,11 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 
 In order of expected value:
 
-1. **Run B's six searches in parallel.** They run one after another today, at about 23 seconds per theme. Running them at the same time should bring that close to the slowest single search.
-2. **Tighten the venue list.** Replace `meetup.com` with the specific Philadelphia groups that host theme events, and add other venue calendars (galleries, community centers, local news event listings). Measure new correct people per added site.
-3. **Make the eval repeatable.** Run each strategy three times per theme and report the average and the spread. Until then, a gain smaller than about 10 points of Precision@10 cannot be told apart from noise.
-4. **Combine A and B.** They found no person in common across three runs. B's list plus A's best profiles may beat either one alone.
-5. **Merge hyphenated surnames,** so a person with one or two surnames is one candidate.
-6. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
-7. **Label each role, not only each person,** so the eval can measure the role check.
-8. **More themes and a second judge** who is not an organizer.
-9. **A web page on Vercel,** so organizers can use it without a terminal.
+1. **Tighten the venue list.** Replace `meetup.com` with the specific Philadelphia groups that host theme events, and add other venue calendars (galleries, community centers, local news event listings). Measure new correct people per added site.
+2. **Make the eval repeatable.** Run each strategy three times per theme and report the average and the spread. Until then, a gain smaller than about 10 points of Precision@10 cannot be told apart from noise.
+3. **Combine A and B.** They found no person in common across three runs. B's list plus A's best profiles may beat either one alone.
+4. **Merge hyphenated surnames,** so a person with one or two surnames is one candidate.
+5. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
+6. **Label each role, not only each person,** so the eval can measure the role check.
+7. **More themes and a second judge** who is not an organizer.
+8. **A web page on Vercel,** so organizers can use it without a terminal.
