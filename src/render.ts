@@ -1,9 +1,9 @@
 import type { StrategyResult } from './types.js'
 
-export function renderMarkdown(theme: string, strategy: 'a' | 'b', result: StrategyResult): string {
+export function renderMarkdown(theme: string, strategy: 'a' | 'b', result: StrategyResult, elapsedMs?: number): string {
     const { candidates, stats } = result
     const cost = stats.calls.reduce((sum, call) => sum + call.costDollars, 0)
-    const ms = stats.calls.reduce((sum, call) => sum + call.ms, 0)
+    const ms = elapsedMs ?? stats.calls.reduce((sum, call) => sum + call.ms, 0)
 
     const lines = [
         `# patch-scout: ${theme}`,

@@ -19,6 +19,18 @@ describe('renderMarkdown', () => {
     expect(md).toContain('Dropped: 2')
     expect(md).toContain('$0.0123')
   })
+  it('shows the real elapsed time when given, not the sum of overlapping calls', () => {
+    const call = { query: 'q', ok: true, attempts: 1, costDollars: 0.007 }
+    const result = { candidates: [], stats: { calls: [{ ...call, ms: 5000 }, { ...call, ms: 4800 }, { ...call, ms: 5100 }], dropped: 0, warnings: [] } }
+    const md = renderMarkdown('t', 'b', result, 5100) // three calls ran at the same time; the run took 5.1s
+    expect(md).toContain('· 5.1s ·')
+    expect(md).not.toContain('14.9s')
+  })
+  it('falls back to the sum of call times when no elapsed time is given', () => {
+    const call = { query: 'q', ok: true, attempts: 1, costDollars: 0.007 }
+    const md = renderMarkdown('t', 'b', { candidates: [], stats: { calls: [{ ...call, ms: 1000 }, { ...call, ms: 2000 }], dropped: 0, warnings: [] } })
+    expect(md).toContain('· 3.0s ·')
+  })
   it('marks a candidate who shares a name with a separate person', () => {
     const ana = { name: 'Ana Ruiz', handles: [], philly: true, score: 1, breakdown: [], evidence: [] }
     const md = renderMarkdown('NFC', 'b', {

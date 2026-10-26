@@ -17,8 +17,9 @@ if (!theme || (strategy !== 'a' && strategy !== 'b')) {
 
 const search = defaultSearchFn()
 const run = strategy === 'a' ? profilesStrategy(search) : evidenceStrategy(search)
+const started = Date.now()
 const result = await run(theme)
 for (const w of result.stats.warnings) console.error(`warning: ${w}`)
 
-console.log(renderMarkdown(theme, strategy, result))
+console.log(renderMarkdown(theme, strategy, result, (Date.now() - started)))
 
