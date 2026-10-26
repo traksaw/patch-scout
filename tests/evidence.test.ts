@@ -43,6 +43,30 @@ describe('evidenceStrategy', () => {
     expect(seen.map((o) => o.includeDomains)).toEqual([undefined, undefined, undefined, VENUE_DOMAINS, VENUE_DOMAINS, VENUE_DOMAINS])
   })
 
+  it('starts all six searches before waiting for any of them', async () => {
+    let started = 0
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const run = evidenceStrategy(async () => { started++; await gate; return { results: [] } }, NOW)('t')
+    await new Promise((resolve) => setTimeout(resolve, 0)) // let every search that can start, start
+    expect(started).toBe(6) // a loop that awaits each search would have started only 1
+    release()
+    await run
+  })
+
+  it('keeps results in search order even when later searches finish first', async () => {
+    const queries = EVIDENCE_SEARCHES('t').map((s) => s.query)
+    let call = 0
+    const slowFirst = async () => {
+      const i = call++
+      await new Promise((resolve) => setTimeout(resolve, (6 - i) * 5)) // the first search finishes last
+      throw new Error(`down ${i}`)
+    }
+    const { stats } = await evidenceStrategy(slowFirst, NOW, { retries: 0, sleep: async () => {} })('t')
+    expect(stats.warnings.slice(0, 6).map((w) => w.match(/down \d/)?.[0])).toEqual(['down 0', 'down 1', 'down 2', 'down 3', 'down 4', 'down 5'])
+    expect(stats.warnings[0]).toContain(queries[0])
+  })
+
   it('makes the model say whether each item is a person, a team, an organization, or an event', () => {
     const item = OUTPUT_SCHEMA.properties.people.items
     expect(item.properties.entity.type).toBe('string')
