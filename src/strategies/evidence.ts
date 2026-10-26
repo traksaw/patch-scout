@@ -80,22 +80,21 @@ export function evidenceStrategy(
         const warnings: string[] = []
         let dropped = 0
 
-       const searches = EVIDENCE_SEARCHES(theme)
-       const outcomes = await Promise.all(
-        searches.map(( { query, includeDomains }) =>
-            searcher.search(query, {
-                type: 'auto',
-                systemPrompt: SYSTEM_PROMPT,
-                outputSchema: OUTPUT_SCHEMA,
-                contents: { text: true },
-                includeDomains,
+        const searches = EVIDENCE_SEARCHES(theme)
+        const outcomes = await Promise.all(
+            searches.map(({ query, includeDomains }) =>
+                searcher.search(query, {
+                    type: 'auto',
+                    systemPrompt: SYSTEM_PROMPT,
+                    outputSchema: OUTPUT_SCHEMA,
+                    contents: { text: true },
+                    includeDomains,
+                })
+            ))
 
-            })
-         ))
-       
-       for (const [i, res] of outcomes.entries()) {
-        const query = searches[i]!.query 
-       
+        for (const [i, res] of outcomes.entries()) {
+            const query = searches[i]!.query
+
             if (!res.ok) {
                 warnings.push(`Query failed after retries, skipped: "${query}" (${res.error})`);
                 continue
@@ -125,7 +124,7 @@ export function evidenceStrategy(
             }
 
         }
-    
+
         const merged = mergeMentions(mentions)
         const proven = merged.filter((person) => person.evidence.some((e) => e.kind !== 'profile'))
         dropped += merged.length - proven.length
