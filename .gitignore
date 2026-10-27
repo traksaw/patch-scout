@@ -7,3 +7,4 @@ runs/
 .superpowers/
 .claude/
 eval/out-*/
+eval/days/
