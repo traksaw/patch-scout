@@ -6,6 +6,7 @@ import { evidenceStrategy } from '../src/strategies/evidence.js'
 import { profilesStrategy } from '../src/strategies/profiles.js'
 import { THEMES } from './themes.js'
 import { toCsv } from './csv.js'
+import { parseRounds } from './args.js'
 
 const search = defaultSearchFn()
 const methods = { a: profilesStrategy(search), b: evidenceStrategy(search) }
@@ -17,7 +18,7 @@ type RunRecord = { theme: string; method: Method; costDollars: number; seconds: 
 const pool: PoolEntry[] = []
 const runs: RunRecord[] = []
 const byName = new Map<string, PoolEntry>()
-const ROUNDS = 3
+const ROUNDS = parseRounds(process.argv.slice(2))
 
 for (let round = 1; round <= ROUNDS; round++) {
     for (const theme of THEMES) {
