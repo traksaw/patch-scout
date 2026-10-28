@@ -17,14 +17,27 @@ function union(boss: number[], a: number, b: number): void {
     }
 }
 
+
 //mergeMentions takes a list of mentions and gives back a list of merged people
 
 export function mergeMentions(mentions: Mention[]): MergedPerson[] {
+    // a cleaned name seen with 2+ different initials is ambiguous: a plain version could be any of them
+    const initialsByKey = new Map<string, Set<string>>()
+    for (const m of mentions) {
+        const i = initials(m.name)
+        if (i === '') continue                              // plain names don't add an initial
+        const key = nameKey(m.name)
+        const seen = initialsByKey.get(key) ?? new Set<string>()
+        seen.add(i)
+        initialsByKey.set(key, seen)
+    }
+    const ambiguous = new Set([...initialsByKey].filter(([, s]) => s.size >= 2).map(([key]) => key))
+
     const bossIndex = mentions.map((_, index) => index) // each mention starts as its own boss.
 
     for (let i = 0; i < mentions.length; i++) {
         for (let j = i + 1; j < mentions.length; j++) {
-            if (isSamePerson(mentions[i]!, mentions[j]!)) { //if the mentions refer to the same person, we will union them in the bossIndex array
+            if (isSamePerson(mentions[i]!, mentions[j]!, ambiguous)) { //if the mentions refer to the same person, we will union them in the bossIndex array
                 union(bossIndex, i, j)
             }
         }
@@ -71,7 +84,7 @@ export function mergeMentions(mentions: Mention[]): MergedPerson[] {
 
 //isSamePerson checks if two mentions refer to the same person based on handle or linked URLs as well as the name match.
 
-function isSamePerson(a: Mention, b: Mention): boolean {
+function isSamePerson(a: Mention, b: Mention, ambiguous: Set<string>): boolean {
     // Check if both mentions have handles and if they match (case-insensitive)
     if ((a.handle && b.handle) && (a.handle.toLowerCase() === b.handle.toLowerCase())) {
         return true
@@ -81,7 +94,12 @@ function isSamePerson(a: Mention, b: Mention): boolean {
         return true
     }
 
-    if ((a.evidence.philly && b.evidence.philly) && (nameKey(a.name) === nameKey(b.name)) && !(initials(a.name) !== '' && initials(b.name) !== '' && initials(a.name) !== initials(b.name))) {
+    if (
+        a.evidence.philly && b.evidence.philly
+        && nameKey(a.name) === nameKey(b.name)
+        && !(initials(a.name) !== '' && initials(b.name) !== '' && initials(a.name) !== initials(b.name))   // no conflicting initials
+        && !(ambiguous.has(nameKey(a.name)) && (initials(a.name) === '' || initials(b.name) === ''))       // no plain name when ambiguous
+    ) {
         return true
     }
     // If neither the handles nor the linked URLs match, the mentions are not considered the same person, so we will make a new pile
@@ -112,7 +130,7 @@ function isShortFormOf(short: string, full: string): boolean {
     const s = normalizeName(short).split(/\s+/)
     const f = normalizeName(full).split(/\s+/)
 
-    if (s.length !== 2 || f.length < 2) return false 
-    const initial = s[1]!.replace('.','')
+    if (s.length !== 2 || f.length < 2) return false
+    const initial = s[1]!.replace('.', '')
     return initial.length === 1 && s[0] === f[0] && f.at(-1)!.startsWith(initial)
 }
