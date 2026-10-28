@@ -95,6 +95,29 @@ describe('mergeMentions', () => {
     expect(out[1]?.possibleDuplicateOf).toEqual(['John A. Smith'])
   })
 
+  it('does not chain two different initials together through a name with no initial', () => {
+    const out = mergeMentions([
+      m('John A. Smith', 'https://a.example'),
+      m('John B. Smith', 'https://b.example'),
+      m('John Smith', 'https://c.example'),
+    ])
+    expect(out.map((p) => p.name).sort()).toEqual(['John A. Smith', 'John B. Smith', 'John Smith'])
+    const plain = out.find((p) => p.name === 'John Smith')
+    expect(plain?.possibleDuplicateOf.sort()).toEqual(['John A. Smith', 'John B. Smith'])
+    for (const p of out) expect(p.evidence).toHaveLength(1) // nobody holds another person's evidence
+  })
+
+  it('still merges a name with no initial when only one initial is ever seen', () => {
+    const out = mergeMentions([m('John A. Smith', 'https://a.example'), m('John Smith', 'https://c.example')])
+    expect(out).toHaveLength(1)
+  })
+
+  it('does not depend on the order the names arrive in', () => {
+    const names = ['John Smith', 'John B. Smith', 'John A. Smith']
+    const out = mergeMentions(names.map((n, i) => m(n, `https://${i}.example`)))
+    expect(out).toHaveLength(3)
+  })
+
   it('flags a first name with a last initial against the full name, without merging', () => {
     const out = mergeMentions([m('Tony S.', 'https://a.example'), m('Tony Siu', 'https://b.example')])
     expect(out).toHaveLength(2)
