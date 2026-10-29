@@ -4,38 +4,73 @@
 import { readFileSync } from 'node:fs'
 import { normalizeName } from '../src/merge.js'
 import { parseCsv } from './csv.js'
-import { methodMetrics } from './metrics.js'
+import { methodMetrics, summarize, formatRange } from './metrics.js'
 import { THEMES } from './themes.js'
 
-type RunRecord = { theme: string; method: 'a' | 'b'; costDollars: number; seconds: number; returned: number; topNames: string[] }
+type RunRecord = { theme: string; method: 'a' | 'b'; costDollars: number; seconds: number; returned: number; topNames: string[], round: number }
 
-const [header, ...rows] = parseCsv(readFileSync('eval/out/judgments.csv', 'utf8'))
-if (!header) throw new Error('judgments.csv is empty. Run npm run eval:pool first.')
-const col = (name: string) => header.indexOf(name)
-const { runs } = JSON.parse(readFileSync('eval/out/pool.json', 'utf8')) as { runs: RunRecord[] }
+type Round = { rows: string[][]; col: (name: string) => number; runs: RunRecord[] }
 
-const unlabeled = rows.filter((r) => !r[col('label')]?.trim()).length
-if (unlabeled) console.error(`warning: ${unlabeled} rows have no label; they count as not relevant.`)
-const isYes = (r: string[]) => r[col('label')]?.trim().toLowerCase() === 'yes'
-const avg = (nums: number[]) => nums.reduce((a, c) => a + c, 0) / nums.length
-const results = (['a', 'b'] as const).map((method) => {
-    const perTheme = THEMES.map((theme) => {
-        const yes = new Set(rows.filter((r) => theme === r[0] && isYes(r)).map((r) => normalizeName(r[col('name')] ?? '')))
-        const run = runs.find((x) => x.method === method && x.theme === theme)
-        if (!run) throw new Error(`pool.json has no run for ${theme}/${method}. Run npm run eval:pool again.`)
-        return { ...methodMetrics({ topNames: run.topNames, yes, allYes: yes }), cost: run.costDollars, seconds: run.seconds }
+function loadDir(dir: string) {
+    const [header, ...rows] = parseCsv(readFileSync(`${dir}/judgments.csv`, 'utf8'))
+    if (!header) throw new Error(`${dir}/judgments.csv is empty.`)
+    const col = (name: string) => header.indexOf(name)
+    const { runs } = JSON.parse(readFileSync(`${dir}/pool.json`, 'utf8')) as { runs: RunRecord[] }
+    const unlabeled = rows.filter((r) => !r[col('label')]?.trim()).length
+    if (unlabeled) console.error(`warning: ${dir}: ${unlabeled} rows have no label; they count as not relevant.`)
+    return { rows, col, runs }
+}
+
+const dirs = process.argv.slice(2)
+const rounds: Round[] = dirs.length
+    ? dirs.map((dir) => {
+        const d = loadDir(dir)
+        const first = Math.min(...d.runs.map((r) => r.round))
+        return { ...d, runs: d.runs.filter((r) => r.round === first) }      // blank 1: keep only the first round
     })
-    return { method, perTheme }
+    : (() => {
+        const d = loadDir('eval/out')
+        return [...new Set(d.runs.map((r) => r.round))].map((round) => ({ ...d, runs: d.runs.filter((r) => r.round === round) }))
+    })()
+
+const results = (['a', 'b'] as const).map((method) => {
+    const perRound = rounds.map((round) => {
+        const perTheme = THEMES.map((theme) => {
+            const isYes = (r: string[]) => r[round.col('label')]?.trim().toLowerCase() === 'yes'
+            const yes = new Set(round.rows.filter((r) => theme === r[0] && isYes(r)).map((r) => normalizeName(r[round.col('name')] ?? '')))
+            const run = round.runs.find((x) => x.method === method && x.theme === theme)
+            if (!run) throw new Error(`pool.json has no run for ${theme}/${method}. Run npm run eval:pool again.`)
+            return { ...methodMetrics({ topNames: run.topNames, yes, allYes: yes }), cost: run.costDollars, seconds: run.seconds }
+        })
+        return perTheme
+    })
+
+    return { method, perRound }
 })
 
-const lines = ['| Method | Precision@10 | Avg returned | Relative recall | $ / theme | s / theme | ', '|---|---|---|---|---|---|']
+const lines = ['| Method | Precision@10 | Share correct | Avg returned | Relative recall | $ / theme | s / theme | ', '|---|---|---|---|---|---|---|']
 for (const r of results) {
     const label = r.method === 'a' ? 'A: people category' : 'B: evidence-first'
-    const precision = avg(r.perTheme.map((t) => t.precisionAt10))
-    const returned = avg(r.perTheme.map((a) => a.returned))
-    const cost = avg(r.perTheme.map((a) => a.cost))
-    const seconds = avg(r.perTheme.map((a) => a.seconds))
-    const recall = avg(r.perTheme.map((call) => (call.relativeRecall * 100)))
-    lines.push(`| ${label} | ${(precision * 100).toFixed(0)}% | ${returned.toFixed(1)} | ${recall.toFixed(0)}% | $${cost.toFixed(4)} | ${seconds.toFixed(1)} |`)
+        // share of returned names that are correct: pooled across the themes in each round, then summarized
+    const shareCorrect = summarize(r.perRound.map((themes) => {
+        const returned = themes.reduce((sum, t) => sum + t.returned, 0)
+        const found = themes.reduce((sum, t) => sum + t.found, 0)
+        return returned === 0 ? 0 : found / returned
+    }))
+
+
+    // for one column: average the themes in each round, then summarize the rounds
+    const avg = (nums: number[]) => nums.reduce((a, c) => a + c, 0) / nums.length
+    const perRoundAvg = (pick: (t: (typeof r.perRound)[0][0]) => number) =>
+        summarize(r.perRound.map((themes) => avg(themes.map(pick))))
+
+    const precision = perRoundAvg((t) => t.precisionAt10)
+    const returned = perRoundAvg((t) => t.returned)
+    const recall = perRoundAvg((t) => t.relativeRecall)
+    const cost = perRoundAvg((t) => t.cost)
+    const seconds = perRoundAvg((t) => t.seconds)
+
+    lines.push(`| ${label} | ${formatRange(precision, 'percent')} | ${formatRange(shareCorrect, 'percent')} | ${formatRange(returned, 'number')} | ${formatRange(recall, 'percent')} | $${cost.mean.toFixed(4)} | ${formatRange(seconds, 'number')} |`)
 }
+
 console.log(lines.join('\n'))

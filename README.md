@@ -35,24 +35,27 @@ Strategy A (people category) is the baseline. It runs one Exa search with `categ
 
 Three themes (sound-reactive visuals, NFC and tap automations, voice agents). For each theme, both strategies ran, the results were pooled, and one judge labeled every person blind to which strategy found them. The rule: `yes` only when the evidence link shows the person doing the theme (built it, taught it, performed it, spoke on it). A matching job title or skills list alone is `no`. The judge is also a PhilaCon Valley organizer and labels their own entry `no` wherever it appears.
 
-Latest run (2026-10-24, with venue-site searches, 47 labeled people):
+Latest eval: one run per day on three days (2026-10-26 to 2026-10-28), each day scored with its own labels. Each cell is the mean, with the lowest and highest day in parentheses:
 
-| Method | Precision@10 | Avg returned | Relative recall | $ / theme | s / theme | 
-|---|---|---|---|---|---|
-| A: people category | 33% | 9.0 | 35% | $0.0070 | 1.3 |
-| B: evidence-first | 57% | 6.7 | 65% | $0.0420 | 22.7 |
+| Method | Precision@10 | Share correct | Avg returned | Relative recall | $ / theme | s / theme | 
+|---|---|---|---|---|---|---|
+| A: people category | 33% (30–37%) | 38% (33–44%) | 8.9 (8.3–9.3) | 45% (41–49%) | $0.0070 | 3.0 (2.2–4.5) |
+| B: evidence-first | 42% (33–50%) | 69% (62–79%) | 6.1 (5.0–7.0) | 52% (48–56%) | $0.0420 | 6.5 (5.0–8.7) |
 
 **How to read this table:**
 
-- **B now leads on every measure of quality.** Per name returned, 17 of B's 20 names were `yes` (85%), against 10 of 27 for A (37%). One person appears twice in B's list under two spellings, so B found 16 different correct people, about twice as many as any earlier version.
-- **The venue searches did most of the work.** Voice agents went from 1 correct person to 8. Most new people came from university and library event pages and a Drexel hackathon story, which the open-web searches never returned.
-- **The pool held 27 `yes` rows** (26 different people). A found 10, B found 17, and no person was found by both.
-- **B costs 6× more than A**, because it runs six searches with structured output and downloads each page's full text for the role check. The 22.7 s in the table was measured when the six searches ran one after another. They now run in parallel: one timed run for voice agents took 5.1 s, against about 24 s before.
-- **Before publishing, four risky `yes` labels were checked against their pages.** Two became `no`: an online real-estate automation session from a New Jersey Meetup group (under NFC), and a speaker's marketing page that only names Philadelphia (under voice agents). Both came from loose matches, not from the venue calendars.
+- **A result counts as real only when the two ranges do not overlap.** Exa returns different pages from day to day, so one run can be lucky or unlucky by 10 points or more. If B's worst day beats A's best day, no lucky or unlucky day explains the gap.
+- **B is clearly more accurate per name.** "Share correct" is the share of returned names that were `yes`. B's worst day (62%) beat A's best day (44%) by 18 points. An organizer who contacts B's list hits about twice as many real matches.
+- **Precision@10 and recall lean toward B, but the ranges overlap,** so three days cannot rule out luck there. Precision@10 divides by 10 even when B returns about 6 names, so it counts B's short list as empty slots.
+- **B costs 6× more than A and takes about twice as long,** because it runs six searches with structured output and downloads each page's full text for the role check. The six searches run in parallel.
 
-The honest summary: **strategy B is now both precise and useful: about 5 correct people per theme, against about 3 for A.** The two still find different people, so a combined list would be larger than either.
+The honest summary: **every name B returns is about twice as likely to be right, on every day measured.** A returns more names, and more than half of them are wrong.
 
-The sample is small (47 labeled people, one judge, one run). The gap between B's 57% and its earlier 23% is far larger than the run-to-run noise seen so far (about 10 points), so it is very likely real, but treat the exact numbers as a direction.
+**Why three days and not three runs in a row.** The first repeated eval ran three rounds back to back, and strategy A returned identical results all three times: searches minutes apart return the same pages. The swing that matters happens across days (B read 57% on 10/24 and 36% on 10/26 with the same code), so each day now counts as one round. Day 3 ran with the merge fix from 2026-10-27; days 1 and 2 ran before it. The fix only changes how rare same-name people are merged.
+
+To reproduce: run `npm run eval:pool` once a day, copy earlier labels with `npm run eval:carry -- <earlier day>/judgments.csv`, label the rest, save the day under `eval/days/`, and score with `npm run eval:score -- eval/days/<day 1> eval/days/<day 2> eval/days/<day 3>`.
+
+The sample is still small: three themes, one judge, three days.
 
 ### Per-page extraction: tried, and not kept
 
@@ -68,13 +71,14 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 
 ### Earlier runs, and bugs that affected them
 
-| Run | Change | B Precision@10 | B per name | B relative recall |
+| Run | Change | B Precision@10 | B share correct | B relative recall |
 |---|---|---|---|---|
 | 2026-10-10 | first version | 20% | 6 of 8 | 53% |
 | 2026-10-13 | role check | 20% | 6 of 9 | 52% |
 | 2026-10-13 | entity field, event queries, handle fix | 27% | 8 of 9 | 59% |
 | 2026-10-14 | name and proof filters | 23% | 7 of 8 | 43% |
-| 2026-10-24 | venue-site searches (current) | 57% | 17 of 20 | 65% |
+| 2026-10-24 | venue-site searches (one run) | 57% | 17 of 20 | 65% |
+| 2026-10-26 to 28 | three days, scored together (current) | 42% (33–50%) | 69% (62–79%) | 52% (48–56%) |
 
 **The first two B rows were affected by a merge bug.** The model writes `"N/A"` as the handle for anyone with no handle on the page. Merge rule 1 joins mentions with matching handles, so every such person in a run became one person holding the others' evidence. In one run, one person's evidence included two other people's event pages, and those two people disappeared from the list. The parser now treats placeholder handles as missing.
 
@@ -100,22 +104,24 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 
 - Three themes only.
 - One judge, who also built the tool and organizes PATCH nights.
-- One run per eval. Exa returns different pages from run to run, and A's precision moved by 7 points with no code change.
+- Three days per eval. Precision@10 and recall still overlap between A and B at that size; more days or more themes would narrow the ranges.
 - Recall is relative to the pooled results of these two strategies, not to every qualified person in Philadelphia.
 - The ranking weights are not tuned.
 - The organization word list is hand-made and misses some names.
-- The venue list is hand-made. `meetup.com` is on it but hosts groups from anywhere, which let in a New Jersey group.
+- The venue list is hand-made. `meetup.com` is on it but hosts groups from anywhere, and its event pages list attendees by first name and last initial; over three days it gave 5 wrong people out of 7.
 - A hyphenated second surname is not merged with the shorter name ("Diego Mendoza" and "Diego Mendoza-Ramos" appear as two people).
 
 ## Next steps
 
-In order of expected value:
+In order of expected value, based on where strategy B's wrong names came from over the three-day eval:
 
-1. **Tighten the venue list.** Replace `meetup.com` with the specific Philadelphia groups that host theme events, and add other venue calendars (galleries, community centers, local news event listings). Measure new correct people per added site.
-2. **Make the eval repeatable.** Run each strategy three times per theme and report the average and the spread. Until then, a gain smaller than about 10 points of Precision@10 cannot be told apart from noise.
-3. **Combine A and B.** They found no person in common across three runs. B's list plus A's best profiles may beat either one alone.
-4. **Merge hyphenated surnames,** so a person with one or two surnames is one candidate.
-5. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
+1. **Replace `meetup.com` with known Philadelphia groups.** Meetup was the largest source of B's mistakes: 5 of the 7 people found there were wrong, while the university, library, and makerspace calendars gave 13 correct people and none wrong. The open-web searches still reach groups the organizers do not know yet.
+2. **Drop names written as a first name and a last initial** ("David W."). On Meetup these were attendees, not teachers, and a name without a surname cannot be contacted anyway.
+3. **Skip the organizers' own names.** Two of B's wrong names were PhilaCon Valley organizers, found through their own event pages. The tool exists to find people the organizers do not already know.
+4. **More themes and a second judge** who is not an organizer. Precision@10 and recall still overlap between A and B after three days; more themes would narrow the ranges.
+5. **Combine A and B.** They have not found a single person in common in any run so far. A's list is more than half wrong, so its names would need a filter before joining B's.
 6. **Label each role, not only each person,** so the eval can measure the role check.
-7. **More themes and a second judge** who is not an organizer.
-8. **A web page on Vercel,** so organizers can use it without a terminal.
+7. **Add a topic check** for events that match the theme's words but not its subject, such as a real-estate "automations" session under NFC and tap automations.
+8. **Merge hyphenated surnames,** so "Diego Mendoza" and "Diego Mendoza-Ramos" are one candidate.
+9. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
+10. **A web page on Vercel,** so organizers can use it without a terminal.

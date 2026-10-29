@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { normalizeName } from '../src/merge.js'
 import { parseCsv, toCsv } from './csv.js'
+import { normalizeUrl } from './links.js'
 
 const NEW = 'eval/out/judgments.csv'
 const oldPath = process.argv[2]
@@ -12,7 +13,7 @@ if (!oldPath) throw new Error('Pass the old judgments.csv, e.g. npm run eval:car
 
 // Same links in any order count as the same evidence.
 const key = (theme: string, name: string, evidence: string) =>
-    [theme.trim(), normalizeName(name), evidence.split(/\s+/).filter(Boolean).sort().join(' ')].join('|')
+    [theme.trim(), normalizeName(name), evidence.split(/\s+/).filter(Boolean).map(normalizeUrl).sort().join(' ')].join('|')
 
 const read = (path: string) => {
     const [header, ...rows] = parseCsv(readFileSync(path, 'utf8'))
