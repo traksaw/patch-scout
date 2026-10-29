@@ -48,9 +48,16 @@ const results = (['a', 'b'] as const).map((method) => {
     return { method, perRound }
 })
 
-const lines = ['| Method | Precision@10 | Avg returned | Relative recall | $ / theme | s / theme | ', '|---|---|---|---|---|---|']
+const lines = ['| Method | Precision@10 | Share correct | Avg returned | Relative recall | $ / theme | s / theme | ', '|---|---|---|---|---|---|---|']
 for (const r of results) {
     const label = r.method === 'a' ? 'A: people category' : 'B: evidence-first'
+        // share of returned names that are correct: pooled across the themes in each round, then summarized
+    const shareCorrect = summarize(r.perRound.map((themes) => {
+        const returned = themes.reduce((sum, t) => sum + t.returned, 0)
+        const found = themes.reduce((sum, t) => sum + t.found, 0)
+        return returned === 0 ? 0 : found / returned
+    }))
+
 
     // for one column: average the themes in each round, then summarize the rounds
     const avg = (nums: number[]) => nums.reduce((a, c) => a + c, 0) / nums.length
@@ -63,7 +70,7 @@ for (const r of results) {
     const cost = perRoundAvg((t) => t.cost)
     const seconds = perRoundAvg((t) => t.seconds)
 
-    lines.push(`| ${label} | ${formatRange(precision, 'percent')} | ${formatRange(returned, 'number')} | ${formatRange(recall, 'percent')} | $${cost.mean.toFixed(4)} | ${formatRange(seconds, 'number')} |`)
+    lines.push(`| ${label} | ${formatRange(precision, 'percent')} | ${formatRange(shareCorrect, 'percent')} | ${formatRange(returned, 'number')} | ${formatRange(recall, 'percent')} | $${cost.mean.toFixed(4)} | ${formatRange(seconds, 'number')} |`)
 }
 
 console.log(lines.join('\n'))

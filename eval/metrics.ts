@@ -4,6 +4,7 @@ export function methodMetrics(input: { topNames: string[]; yes: Set<string>; all
     precisionAt10: found / 10,
     relativeRecall: input.allYes.size === 0 ? 0 : found / input.allYes.size,
     returned: input.topNames.length,
+    found,
   }
 }
 
