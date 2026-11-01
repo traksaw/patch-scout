@@ -41,7 +41,8 @@ export function parsePeopleOutput(content: unknown): { people: ExtractedPerson[]
         const quote = typeof item.quote === 'string' ? item.quote.trim() : ''
         const entity = typeof item.entity === 'string' ? item.entity : ''
         const words = name.toLowerCase().split(/\s+/)
-        if ((name === '' || url === '') || (!ROLES.has(role) || (words.some((word) => ORG_WORDS.has(word)) || words.length < 2) || (entity.length > 0 && entity !== 'person') || (PLACEHOLDERS.has(name.toLowerCase()) || !/\p{L}/u.test(name)))) { dropped++; continue }
+        const initialSurname = /^\p{L}\.?$/u.test(words.at(-1) ?? '')
+        if ((name === '' || url === '') || (!ROLES.has(role) || (words.some((word) => ORG_WORDS.has(word)) || words.length < 2) || (entity.length > 0 && entity !== 'person') || (PLACEHOLDERS.has(name.toLowerCase()) || !/\p{L}/u.test(name)) || initialSurname)) { dropped++; continue }
         people.push({
             name,
             url,
