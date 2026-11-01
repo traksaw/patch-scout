@@ -64,6 +64,16 @@ describe('parsePeopleOutput', () => {
     expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
     expect(out.dropped).toBe(orgs.length)
   })
+  it('drops names written as a first name and a last initial, since they cannot be contacted', () => {
+    const initialOnly = ['David W.', 'Jonathan G', 'Tony S.', 'ana r.']
+    const out = parsePeopleOutput({ people: [good, ...initialOnly.map((name) => ({ ...good, name }))] })
+    expect(out.people.map((p) => p.name)).toEqual(['Ana Ruiz'])
+    expect(out.dropped).toBe(initialOnly.length)
+  })
+  it('keeps a middle initial when the surname is there', () => {
+    const names = ['Waskar M. Paulino', 'John A. Smith', 'Bo B Chen']
+    expect(parsePeopleOutput({ people: names.map((name) => ({ ...good, name })) }).people).toHaveLength(names.length)
+  })
   it('keeps people whose surnames are also place or building words', () => {
     const names = ['Richard Green', 'Ana Hall', 'Bo Park', 'Cy Booker']
     expect(parsePeopleOutput({ people: names.map((name) => ({ ...good, name })) }).people).toHaveLength(names.length)
