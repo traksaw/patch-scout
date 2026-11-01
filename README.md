@@ -22,7 +22,7 @@ Strategy B (evidence-first) is the product. It looks for the work first and find
 
 1. **Search for local events, twice.** Run three Exa searches per theme: workshops or talks, meetups, and hackathons or demo nights, each in Philadelphia. Then run the same three again, limited with `includeDomains` to Philadelphia venue sites (Temple, Drexel, Penn, the Free Library, NextFab, Hive76, Iffy Books, Meetup, and others). Event pages name a person, a place, and a date on the same page, and the venue sites reach people the open web misses: in a test, the two searches shared only 5 of 18 people.
 2. **Extract people with `outputSchema`.** Each search asks Exa for structured output: the name, the role (`taught`, `built`, or `wrote`), the page that shows the work, whether the page ties the person to Philadelphia, the person's own links, and whether the item is a `person`, `organization`, `team`, or `event`.
-3. **Clean the model's output.** The model labels organizations as people and fills empty fields with placeholders, so the code checks the names itself. It drops a name that is a placeholder (`null`, `N/A`), has no letters, has only one word (`philly`, `Jacob`), or contains an organization word (`club`, `books`, `chapter`, `valley`, ...). It also drops items the model marks as not a person, and treats placeholder handles as no handle (see the merge rules below).
+3. **Clean the model's output.** The model labels organizations as people and fills empty fields with placeholders, so the code checks the names itself. It drops a name that is a placeholder (`null`, `N/A`), has no letters, has only one word (`philly`, `Jacob`), ends in a single initial instead of a surname (`David W.`), or contains an organization word (`club`, `books`, `chapter`, `valley`, ...). It also drops items the model marks as not a person, and treats placeholder handles as no handle (see the merge rules below).
 4. **Check each cited URL against the results.** The code drops a person when the cited page is not one of the search results that came back. The model must point to a page the search actually returned.
 5. **Check each role against a quote.** The model must also copy one sentence from the page that shows the role. The code looks for that sentence in the page's full text. If the quote is not on the page, the evidence drops to `profile`. If the role is `taught` but the quote has no teaching word (workshop, class, talk, led, ...), the role drops to `built`.
 6. **Merge.** Combine mentions of the same person across pages (rules below).
@@ -115,13 +115,12 @@ Per-page extraction nearly doubled the names but added at most one or two correc
 
 In order of expected value, based on where strategy B's wrong names came from over the three-day eval:
 
-1. **Replace `meetup.com` with known Philadelphia groups.** Meetup was the largest source of B's mistakes: 5 of the 7 people found there were wrong, while the university, library, and makerspace calendars gave 13 correct people and none wrong. The open-web searches still reach groups the organizers do not know yet.
-2. **Drop names written as a first name and a last initial** ("David W."). On Meetup these were attendees, not teachers, and a name without a surname cannot be contacted anyway.
-3. **Skip the organizers' own names.** Two of B's wrong names were PhilaCon Valley organizers, found through their own event pages. The tool exists to find people the organizers do not already know.
-4. **More themes and a second judge** who is not an organizer. Precision@10 and recall still overlap between A and B after three days; more themes would narrow the ranges.
-5. **Combine A and B.** They have not found a single person in common in any run so far. A's list is more than half wrong, so its names would need a filter before joining B's.
-6. **Label each role, not only each person,** so the eval can measure the role check.
-7. **Add a topic check** for events that match the theme's words but not its subject, such as a real-estate "automations" session under NFC and tap automations.
-8. **Merge hyphenated surnames,** so "Diego Mendoza" and "Diego Mendoza-Ramos" are one candidate.
-9. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
-10. **A web page on Vercel,** so organizers can use it without a terminal.
+1. **Measure the new name rule over three days.** Names written as a first name and a last initial are now dropped (2026-10-31). Over the last three-day eval, that rule would have removed 3 of Meetup's 5 wrong people, and one correct one ("Tony S."). If Meetup still gives more wrong people than correct ones over the next three days, replace `meetup.com` with known Philadelphia groups, which Exa supports as paths such as `meetup.com/code-coffee-philly`.
+2. **Skip the organizers' own names.** Two of B's wrong names were PhilaCon Valley organizers, found through their own event pages. The tool exists to find people the organizers do not already know.
+3. **More themes and a second judge** who is not an organizer. Precision@10 and recall still overlap between A and B after three days; more themes would narrow the ranges.
+4. **Combine A and B.** They have not found a single person in common in any run so far. A's list is more than half wrong, so its names would need a filter before joining B's.
+5. **Label each role, not only each person,** so the eval can measure the role check.
+6. **Add a topic check** for events that match the theme's words but not its subject, such as a real-estate "automations" session under NFC and tap automations.
+7. **Merge hyphenated surnames,** so "Diego Mendoza" and "Diego Mendoza-Ramos" are one candidate.
+8. **Strategy C on the Agent API (`/agent`)**, which Exa recommends for list-building. It is the strongest comparison, but it is asynchronous and slower.
+9. **A web page on Vercel,** so organizers can use it without a terminal.
