@@ -12,7 +12,8 @@
     "record": "tsx scripts/record-fixtures.ts",
     "eval:pool": "tsx eval/pool.ts",
     "eval:score": "tsx eval/score.ts",
-    "eval:carry": "tsx eval/carry.ts"
+    "eval:carry": "tsx eval/carry.ts",
+    "eval:save": "tsx eval/save.ts"
   },
   "engines": {
     "node": ">=22"
